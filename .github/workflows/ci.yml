@@ -93,13 +93,13 @@ jobs:
             deno) deno eval "$esm" ;;
           esac
 
-      # サブパスごとにクラスが複製されると、spatial-id で作った SingleId を client が判定できなくなる。
+      # サブパスごとにクラスが複製されると、spatial-id で作った SingleId を kasane-client が判定できなくなる。
       - name: Use in-memory Kasane (Wasm) across subpaths
         working-directory: consumer
         run: |
           body='const c = await KasaneClient.inMemory(); await c.createDatabase("db"); const d = c.database("db"); await d.createTable("t", "int", 20); const id = SingleId.create(20, 0, 100, 200); await d.table("t").insert(10n, id); const r = await d.table("t").search(id).toArray(); const out = r.map((x) => `${x.id}=${x.value}`).join(","); if (out !== "20/0/100/200=10") throw new Error(out); console.log(out);'
-          esm="import { SingleId } from \"@airbee-project/kasane-client/spatial-id\"; import { KasaneClient } from \"@airbee-project/kasane-client/client\"; $body"
-          cjs="const { SingleId } = require(\"@airbee-project/kasane-client/spatial-id\"); const { KasaneClient } = require(\"@airbee-project/kasane-client/client\"); (async () => { $body })().catch((e) => { console.error(e); process.exit(1); });"
+          esm="import { SingleId } from \"@airbee-project/kasane-client/spatial-id\"; import { KasaneClient } from \"@airbee-project/kasane-client/kasane-client\"; $body"
+          cjs="const { SingleId } = require(\"@airbee-project/kasane-client/spatial-id\"); const { KasaneClient } = require(\"@airbee-project/kasane-client/kasane-client\"); (async () => { $body })().catch((e) => { console.error(e); process.exit(1); });"
           case "${{ matrix.runtime }}" in
             node-esm) node --input-type=module -e "$esm" ;;
             node-cjs) node -e "$cjs" ;;
@@ -130,7 +130,7 @@ jobs:
           npm init -y
           npm install ../package.tgz wrangler@4
           cat > src/worker.js <<'EOF'
-          import { KasaneClient } from "@airbee-project/kasane-client/client";
+          import { KasaneClient } from "@airbee-project/kasane-client/kasane-client";
           import { SingleId } from "@airbee-project/kasane-client/spatial-id";
 
           export default {
@@ -213,10 +213,10 @@ jobs:
           cat > index.ts <<'EOF'
           import { SingleId, SpatialIdError } from "@airbee-project/kasane-client/spatial-id";
           import { Coordinate } from "@airbee-project/kasane-client/geometry";
-          import { KasaneClient } from "@airbee-project/kasane-client/client";
-          import type { TableInfo } from "@airbee-project/kasane-client/client/database";
-          import { query } from "@airbee-project/kasane-client/client/query";
-          import type { ResultItem } from "@airbee-project/kasane-client/client/result";
+          import { KasaneClient } from "@airbee-project/kasane-client/kasane-client";
+          import type { TableInfo } from "@airbee-project/kasane-client/kasane-client/database";
+          import { query } from "@airbee-project/kasane-client/kasane-client/query";
+          import type { ResultItem } from "@airbee-project/kasane-client/kasane-client/result";
           export const id: SingleId = Coordinate.create(35, 139, 0).singleId(20);
           export const q = query.source("db", "t");
           export type T = [TableInfo, ResultItem, typeof KasaneClient, SpatialIdError];

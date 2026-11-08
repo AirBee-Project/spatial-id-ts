@@ -10,7 +10,7 @@
     "includes": [
       "**",
       "!src/proto/gen",
-      "!src/client/wasm/gen",
+      "!src/kasane-client/wasm/gen",
       "!src/collection/wasm/gen",
       "!wasm/*/target",
       "!docs"

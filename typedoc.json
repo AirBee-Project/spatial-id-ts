@@ -5,10 +5,10 @@
     "src/time/index.ts",
     "src/geometry/index.ts",
     "src/collection/index.ts",
-    "src/client/index.ts",
-    "src/client/database/index.ts",
-    "src/client/query/index.ts",
-    "src/client/result/index.ts"
+    "src/kasane-client/index.ts",
+    "src/kasane-client/database/index.ts",
+    "src/kasane-client/query/index.ts",
+    "src/kasane-client/result/index.ts"
   ],
   "tsconfig": "tsconfig.build.json",
   "out": "docs",

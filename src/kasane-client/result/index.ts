@@ -1,7 +1,7 @@
 /**
  * 検索・クエリの結果。
  *
- * {@link "client/database"!TableHandle.search} と {@link client!KasaneClient.query} は {@link ResultStream} を返す。`for await` で {@link ResultItem} を1件ずつ受け取る。
+ * {@link "kasane-client/database"!TableHandle.search} と {@link kasane-client!KasaneClient.query} は {@link ResultStream} を返す。`for await` で {@link ResultItem} を1件ずつ受け取る。
  *
  * ```ts
  * for await (const { id, value } of table.search(ids, { format: "singleId" })) {
