@@ -1,7 +1,7 @@
 /**
  * 空間クエリの組み立て。
  *
- * {@link query.source} を起点に {@link QueryBuilder} のメソッドをつなげて組み立て、{@link client!KasaneClient.query} で実行する。
+ * {@link query.source} を起点に {@link QueryBuilder} のメソッドをつなげて組み立て、{@link kasane-client!KasaneClient.query} で実行する。
  *
  * ```ts
  * const q = query

@@ -5,14 +5,14 @@ import type {
   TableDataType,
   TableInfo,
   ZoomLevelPolicy,
-} from "../client/database/types.js";
+} from "../kasane-client/database/types.js";
 import type {
   Direction,
   FalloffPattern,
   MathOperator,
   MergePolicy,
-} from "../client/query/types.js";
-import type { OutputFormat } from "../client/result/types.js";
+} from "../kasane-client/query/types.js";
+import type { OutputFormat } from "../kasane-client/result/types.js";
 import { FlexId } from "../spatial-id/flexId.js";
 import { RangeId } from "../spatial-id/rangeId.js";
 import { SingleId } from "../spatial-id/singleId.js";

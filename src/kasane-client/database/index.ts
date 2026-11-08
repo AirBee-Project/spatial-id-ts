@@ -1,7 +1,7 @@
 /**
  * データベースとテーブルの操作。
  *
- * {@link client!KasaneClient.database} で {@link DatabaseHandle} を、{@link DatabaseHandle.table} で {@link TableHandle} を得て操作する。
+ * {@link kasane-client!KasaneClient.database} で {@link DatabaseHandle} を、{@link DatabaseHandle.table} で {@link TableHandle} を得て操作する。
  *
  * ```ts
  * const db = client.database("city");

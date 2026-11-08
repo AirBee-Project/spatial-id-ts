@@ -1,4 +1,4 @@
-# Kasane-TypeScript
+# spatial-id-ts
 - 時空間IDの基礎的な型
 - [Kasane v0.7](https://github.com/AirBee-Project/Kasane)との接続機能
 - インメモリの Kasane（Wasm）
@@ -14,17 +14,17 @@
 | `@airbee-project/kasane-client/time` | `Interval`、`AllowedIntervals`、`TZoomLevel` |
 | `@airbee-project/kasane-client/geometry` | `Coordinate`、`GeometryError` |
 | `@airbee-project/kasane-client/collection` | `SpatialIdSet`、`SpatialIdMap` |
-| `@airbee-project/kasane-client/client` | `KasaneClient`、通信エラーの判定関数 |
-| `@airbee-project/kasane-client/client/database` | `DatabaseHandle`、`TableHandle`、テーブルの型 |
-| `@airbee-project/kasane-client/client/query` | `query`、`QueryBuilder` |
-| `@airbee-project/kasane-client/client/result` | `ResultStream` |
+| `@airbee-project/kasane-client/kasane-client` | `KasaneClient`、通信エラーの判定関数 |
+| `@airbee-project/kasane-client/kasane-client/database` | `DatabaseHandle`、`TableHandle`、テーブルの型 |
+| `@airbee-project/kasane-client/kasane-client/query` | `query`、`QueryBuilder` |
+| `@airbee-project/kasane-client/kasane-client/result` | `ResultStream` |
 
 `spatial-id`、`time`、`geometry` は、Connect や Wasm を読み込みません。
 
 ## 接続
 
 ```ts
-import { KasaneClient } from "@airbee-project/kasane-client/client";
+import { KasaneClient } from "@airbee-project/kasane-client/kasane-client";
 
 // grpc-web で Kasane サーバーにつなぐ。複数の URL を渡すと、接続できないサーバーを飛ばす。
 const client = await KasaneClient.connect("http://localhost:5172", "root", "password");
@@ -76,7 +76,7 @@ KASANE_URL=http://localhost:5172 bun run test
 
 | 対象 | 生成先 | crate | 使ったコミットの記録 |
 | :--- | :--- | :--- | :--- |
-| `kasane` | `src/proto/gen`（proto から生成した TypeScript）、`src/client/wasm/gen`（Wasm） | Kasane | `wasm/kasane/Cargo.lock` |
+| `kasane` | `src/proto/gen`（proto から生成した TypeScript）、`src/kasane-client/wasm/gen`（Wasm） | Kasane | `wasm/kasane/Cargo.lock` |
 | `spatial-id` | `src/collection/wasm/gen`（Wasm） | spatial-id-rs | `wasm/spatial-id/Cargo.lock` |
 
 次のコマンドで `main` の最新を取り直し、作り直します。対象を指定すると、その対象だけを作り直します。`kasane` の2つの生成先は同じコミットから作ります。

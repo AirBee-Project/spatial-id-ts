@@ -11,15 +11,17 @@
       "@airbee-project/kasane-client/collection": [
         "../src/collection/index.ts"
       ],
-      "@airbee-project/kasane-client/client": ["../src/client/index.ts"],
-      "@airbee-project/kasane-client/client/database": [
-        "../src/client/database/index.ts"
+      "@airbee-project/kasane-client/kasane-client": [
+        "../src/kasane-client/index.ts"
       ],
-      "@airbee-project/kasane-client/client/query": [
-        "../src/client/query/index.ts"
+      "@airbee-project/kasane-client/kasane-client/database": [
+        "../src/kasane-client/database/index.ts"
       ],
-      "@airbee-project/kasane-client/client/result": [
-        "../src/client/result/index.ts"
+      "@airbee-project/kasane-client/kasane-client/query": [
+        "../src/kasane-client/query/index.ts"
+      ],
+      "@airbee-project/kasane-client/kasane-client/result": [
+        "../src/kasane-client/result/index.ts"
       ]
     }
   },

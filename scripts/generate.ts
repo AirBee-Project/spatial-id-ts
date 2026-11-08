@@ -1,5 +1,5 @@
 // 依存する Rust crate の main の最新を取り直し、生成コードを作る。
-// - kasane: src/proto/gen と src/client/wasm/gen（同じコミットから作る）
+// - kasane: src/proto/gen と src/kasane-client/wasm/gen（同じコミットから作る）
 // - spatial-id: src/collection/wasm/gen
 // 引数で対象を絞れる（例: `bun run generate spatial-id`）。省略するとすべて作る。
 // 必要なもの: cargo（wasm32-unknown-unknown ターゲット）、protoc、Cargo.lock と同じ版の wasm-bindgen。
@@ -121,7 +121,7 @@ function commitOf(manifest: string, repository: string): string | undefined {
 function generateKasane(): void {
   const manifest = join(root, "wasm", "kasane", "Cargo.toml");
   const genDir = join(root, "src", "proto", "gen");
-  const wasmDir = join(root, "src", "client", "wasm", "gen");
+  const wasmDir = join(root, "src", "kasane-client", "wasm", "gen");
   const packages = update(manifest, "kasane");
 
   // codegen

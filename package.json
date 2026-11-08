@@ -4,7 +4,7 @@
   "description": "kasane-client",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AirBee-Project/Kasane-TypeScript.git"
+    "url": "git+https://github.com/AirBee-Project/spatial-id-ts.git"
   },
   "publishConfig": {
     "access": "public"
@@ -56,48 +56,48 @@
         "default": "./dist/collection/index.cjs"
       }
     },
-    "./client": {
-      "kasane-source": "./src/client/index.ts",
+    "./kasane-client": {
+      "kasane-source": "./src/kasane-client/index.ts",
       "import": {
-        "types": "./dist/client/index.d.ts",
-        "default": "./dist/client/index.js"
+        "types": "./dist/kasane-client/index.d.ts",
+        "default": "./dist/kasane-client/index.js"
       },
       "require": {
-        "types": "./dist/cjs/client/index.d.ts",
-        "default": "./dist/client/index.cjs"
+        "types": "./dist/cjs/kasane-client/index.d.ts",
+        "default": "./dist/kasane-client/index.cjs"
       }
     },
-    "./client/database": {
-      "kasane-source": "./src/client/database/index.ts",
+    "./kasane-client/database": {
+      "kasane-source": "./src/kasane-client/database/index.ts",
       "import": {
-        "types": "./dist/client/database/index.d.ts",
-        "default": "./dist/client/database/index.js"
+        "types": "./dist/kasane-client/database/index.d.ts",
+        "default": "./dist/kasane-client/database/index.js"
       },
       "require": {
-        "types": "./dist/cjs/client/database/index.d.ts",
-        "default": "./dist/client/database/index.cjs"
+        "types": "./dist/cjs/kasane-client/database/index.d.ts",
+        "default": "./dist/kasane-client/database/index.cjs"
       }
     },
-    "./client/query": {
-      "kasane-source": "./src/client/query/index.ts",
+    "./kasane-client/query": {
+      "kasane-source": "./src/kasane-client/query/index.ts",
       "import": {
-        "types": "./dist/client/query/index.d.ts",
-        "default": "./dist/client/query/index.js"
+        "types": "./dist/kasane-client/query/index.d.ts",
+        "default": "./dist/kasane-client/query/index.js"
       },
       "require": {
-        "types": "./dist/cjs/client/query/index.d.ts",
-        "default": "./dist/client/query/index.cjs"
+        "types": "./dist/cjs/kasane-client/query/index.d.ts",
+        "default": "./dist/kasane-client/query/index.cjs"
       }
     },
-    "./client/result": {
-      "kasane-source": "./src/client/result/index.ts",
+    "./kasane-client/result": {
+      "kasane-source": "./src/kasane-client/result/index.ts",
       "import": {
-        "types": "./dist/client/result/index.d.ts",
-        "default": "./dist/client/result/index.js"
+        "types": "./dist/kasane-client/result/index.d.ts",
+        "default": "./dist/kasane-client/result/index.js"
       },
       "require": {
-        "types": "./dist/cjs/client/result/index.d.ts",
-        "default": "./dist/client/result/index.cjs"
+        "types": "./dist/cjs/kasane-client/result/index.d.ts",
+        "default": "./dist/kasane-client/result/index.cjs"
       }
     }
   },
@@ -115,23 +115,23 @@
       "collection": [
         "./dist/collection/index.d.ts"
       ],
-      "client": [
-        "./dist/client/index.d.ts"
+      "kasane-client": [
+        "./dist/kasane-client/index.d.ts"
       ],
-      "client/database": [
-        "./dist/client/database/index.d.ts"
+      "kasane-client/database": [
+        "./dist/kasane-client/database/index.d.ts"
       ],
-      "client/query": [
-        "./dist/client/query/index.d.ts"
+      "kasane-client/query": [
+        "./dist/kasane-client/query/index.d.ts"
       ],
-      "client/result": [
-        "./dist/client/result/index.d.ts"
+      "kasane-client/result": [
+        "./dist/kasane-client/result/index.d.ts"
       ]
     }
   },
   "imports": {
     "#kasane-wasm": {
-      "kasane-source": "./src/client/wasm/inline.ts",
+      "kasane-source": "./src/kasane-client/wasm/inline.ts",
       "workerd": "./dist/wasm/workerd.js",
       "import": "./dist/wasm/inline.js",
       "require": "./dist/wasm/inline.cjs",
@@ -142,13 +142,13 @@
     "dist",
     "!dist/wasm/*.map",
     "src",
-    "!src/client/wasm/gen",
+    "!src/kasane-client/wasm/gen",
     "!src/collection/wasm/gen",
     "README.md"
   ],
   "scripts": {
     "build": "tsup",
-    "clean": "rm -rf dist docs coverage wasm/*/target",
+    "clean": "rm -rf dist docs coverage wasm/*/target node_modules",
     "dev": "bun --conditions kasane-source playground/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint --write .",

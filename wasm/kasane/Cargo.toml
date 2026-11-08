@@ -8,7 +8,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-# 生成コード（src/client/gen）もこのリビジョンの proto から作る。更新は `bun run generate`。
+# 生成コード（src/kasane-client/gen）もこのリビジョンの proto から作る。更新は `bun run generate`。
 kasane = { git = "https://github.com/AirBee-Project/Kasane.git", branch = "main", default-features = false }
 js-sys = "0.3"
 tonic-types = "0.14.6"
