@@ -52,6 +52,13 @@ for (const [id, value] of map) {
 }
 ```
 
+`toJSON` と `fromJSON` で、[時空間データスキーマ](https://airbee-project.github.io/schemas/json/v1.0.json)の JSON と相互に変換できます。
+
+```ts
+const text = JSON.stringify(map);
+const restored = SpatialIdMap.fromJSON<number>(JSON.parse(text));
+```
+
 [spatial-id-rs](https://github.com/AirBee-Project/spatial-id-rs) を Wasm にしたもので、Node、Bun、Deno、ブラウザで動きます。Cloudflare Workers では動きません。Wasm は最初にコンストラクターを呼んだときに同期で読み込むので、初期化を待つ必要はありません。
 
 中身は Wasm のメモリに置き、GC で回収されたときに解放するので、後始末は要りません。大きな集合を作っては捨てることを繰り返すときは、`using` で宣言すると、スコープを抜けた時点で解放できます。
