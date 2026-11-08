@@ -2,7 +2,13 @@ import type { FlexId } from "../spatial-id/flexId.js";
 import type { RangeId } from "../spatial-id/rangeId.js";
 import type { SingleId } from "../spatial-id/singleId.js";
 import type { SpatialId } from "../spatial-id/spatialId.js";
-import type { AllowedIntervals } from "../time/allowedIntervals.js";
+import { AllowedIntervals } from "../time/allowedIntervals.js";
+import {
+  decodeJsonMap,
+  encodeJsonDocument,
+  encodeJsonEntry,
+  type SpatialIdJson,
+} from "./json.js";
 import {
   decodeEntries,
   decodeFlexIds,
@@ -40,6 +46,22 @@ export class SpatialIdMap<V> implements Iterable<[RangeId, V]>, Disposable {
     entries?: Iterable<readonly [SpatialId, V]>,
   ): SpatialIdMap<V> {
     return new SpatialIdMap(entries);
+  }
+
+  /**
+   * {@link SpatialIdJson} からマップを作る。`data` はちょうど1件で、各 ID は `ref` で値を指さなければならない。
+   *
+   * 同じ `ref` を指す ID は同じ値を共有するので、オブジェクトの値でも隣り合えば1つにまとまる。
+   *
+   * ```ts
+   * const map = SpatialIdMap.fromJSON<number>(JSON.parse(text));
+   * ```
+   *
+   * @throws {@link spatial-id!SpatialIdError} ID の値が範囲外のとき
+   * @throws `TypeError` スキーマに沿っていないとき
+   */
+  public static fromJSON<V>(json: SpatialIdJson<V>): SpatialIdMap<V> {
+    return new SpatialIdMap(decodeJsonMap<V>(json));
   }
 
   private static wrap<V>(raw: RawMap): SpatialIdMap<V> {
@@ -196,6 +218,28 @@ export class SpatialIdMap<V> implements Iterable<[RangeId, V]>, Disposable {
       this.owner.raw.flexEntries(),
       decodeFlexIds,
     );
+  }
+
+  /**
+   * {@link SpatialIdJson} に変換する。`JSON.stringify(map)` で JSON 文字列にできる。
+   *
+   * 値は重複を除いて `value` に並べ、各 ID は `ref` でその添字を指す。値は `===` で比べる。
+   * 時間方向に隣り合う ID は、{@link time!AllowedIntervals.calendar} の単位でつなげて書き出す。
+   */
+  public toJSON(): SpatialIdJson<V> {
+    const value: V[] = [];
+    const refs = new Map<V, number>();
+    const ids = this.reconstructedTimeRanges(AllowedIntervals.calendar()).map(
+      ([id, v]) => {
+        let ref = refs.get(v);
+        if (ref === undefined) {
+          ref = value.push(v) - 1;
+          refs.set(v, ref);
+        }
+        return encodeJsonEntry(id, ref);
+      },
+    );
+    return encodeJsonDocument({ name: "", value, ids });
   }
 
   /**

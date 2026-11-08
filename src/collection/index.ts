@@ -18,6 +18,13 @@
  * }
  * ```
  *
+ * {@link SpatialIdSet.toJSON} と {@link SpatialIdSet.fromJSON} で、[時空間データスキーマ](https://airbee-project.github.io/schemas/json/v1.0.json) の JSON と相互に変換できる。
+ *
+ * ```ts
+ * const text = JSON.stringify(map);
+ * const restored = SpatialIdMap.fromJSON<number>(JSON.parse(text));
+ * ```
+ *
  * 中身は Wasm で持ち、最初にコンストラクターを呼んだときに同期で読み込む。
  * Cloudflare Workers では動かない。
  *
@@ -29,3 +36,4 @@
 // biome-ignore assist/source/organizeImports: @sortStrategy documents-first はドキュメント以外を並べ替えないので、docs はこの export の順に並ぶ
 export { SpatialIdSet } from "./spatialIdSet.js";
 export { SpatialIdMap } from "./spatialIdMap.js";
+export type { SpatialIdJson } from "./json.js";

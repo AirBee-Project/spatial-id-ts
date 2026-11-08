@@ -2,7 +2,13 @@ import type { FlexId } from "../spatial-id/flexId.js";
 import type { RangeId } from "../spatial-id/rangeId.js";
 import type { SingleId } from "../spatial-id/singleId.js";
 import type { SpatialId } from "../spatial-id/spatialId.js";
-import type { AllowedIntervals } from "../time/allowedIntervals.js";
+import { AllowedIntervals } from "../time/allowedIntervals.js";
+import {
+  decodeJsonSet,
+  encodeJsonDocument,
+  encodeJsonEntry,
+  type SpatialIdJson,
+} from "./json.js";
 import {
   decodeFlexIds,
   decodeIds,
@@ -44,6 +50,20 @@ export class SpatialIdSet implements Iterable<RangeId>, Disposable {
     // 公開型に RawMap を出すと、dist にない Wasm の型定義を .d.ts が参照してしまうので、private のまま読む
     // biome-ignore lint/complexity/useLiteralKeys: private は要素アクセスでしか読めない
     return SpatialIdSet.wrap(RawSet.fromMap(map["owner"].raw));
+  }
+
+  /**
+   * {@link SpatialIdJson} から集合を作る。`data` はちょうど1件でなければならない。
+   *
+   * ```ts
+   * const set = SpatialIdSet.fromJSON(JSON.parse(text));
+   * ```
+   *
+   * @throws {@link spatial-id!SpatialIdError} ID の値が範囲外のとき
+   * @throws `TypeError` スキーマに沿っていないとき
+   */
+  public static fromJSON(json: SpatialIdJson): SpatialIdSet {
+    return new SpatialIdSet(decodeJsonSet(json));
   }
 
   private static wrap(raw: RawSet): SpatialIdSet {
@@ -180,6 +200,19 @@ export class SpatialIdSet implements Iterable<RangeId>, Disposable {
   /** `for...of` と同じだが、内部で持つ {@link FlexId} をそのまま返す。 */
   public *iterFlexIds(): Generator<FlexId> {
     yield* decodeFlexIds(this.owner.raw.flexIds());
+  }
+
+  /**
+   * {@link SpatialIdJson} に変換する。`JSON.stringify(set)` で JSON 文字列にできる。
+   *
+   * 時間方向に隣り合う ID は、{@link time!AllowedIntervals.calendar} の単位でつなげて書き出す。
+   */
+  public toJSON(): SpatialIdJson<never> {
+    const ids = this.reconstructedTimeRanges(AllowedIntervals.calendar());
+    return encodeJsonDocument({
+      name: "",
+      ids: ids.map((id) => encodeJsonEntry(id)),
+    });
   }
 
   /**
