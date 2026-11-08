@@ -148,6 +148,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "clean": "rm -rf dist docs coverage wasm/*/target",
     "dev": "bun --conditions kasane-source playground/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint --write .",
