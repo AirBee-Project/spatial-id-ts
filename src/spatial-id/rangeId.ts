@@ -1,7 +1,7 @@
 import { Coordinate } from "../geometry/coordinate.js";
+import { Interval } from "../time/interval.js";
 import { SpatialIdError } from "./error.js";
 import { FlexId } from "./flexId.js";
-import { Interval } from "./interval.js";
 import { SingleId } from "./singleId.js";
 import type { SpatialId } from "./spatialId.js";
 import { SpatialIdBase } from "./spatialIdBase.js";

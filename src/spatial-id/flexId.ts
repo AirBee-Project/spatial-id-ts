@@ -1,6 +1,6 @@
 import type { Coordinate } from "../geometry/coordinate.js";
+import { Interval } from "../time/interval.js";
 import { SpatialIdError } from "./error.js";
-import { Interval } from "./interval.js";
 import { RangeId } from "./rangeId.js";
 import type { SingleId } from "./singleId.js";
 import type { SpatialId } from "./spatialId.js";

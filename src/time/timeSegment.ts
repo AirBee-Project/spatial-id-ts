@@ -1,4 +1,4 @@
-import type { TZoomLevel } from "./zoomLevel.js";
+import type { TZoomLevel } from "../spatial-id/zoomLevel.js";
 
 /**
  * 時間軸の2分木で、2の冪秒の幅を持つ1ノード。{@link FlexId} の時間軸に対応する。

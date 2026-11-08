@@ -3,7 +3,7 @@ node_modules/
 
 # Build outputs
 dist/
-wasm/target/
+wasm/*/target/
 docs/
 
 # Logs
@@ -41,5 +41,5 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
-# playground の出力
-playground/ids.txt
+
+.claude/

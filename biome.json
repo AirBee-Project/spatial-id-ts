@@ -11,7 +11,8 @@
       "**",
       "!src/proto/gen",
       "!src/client/wasm/gen",
-      "!wasm/target",
+      "!src/collection/wasm/gen",
+      "!wasm/*/target",
       "!docs"
     ]
   },

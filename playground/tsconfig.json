@@ -6,7 +6,11 @@
       "@airbee-project/kasane-client/spatial-id": [
         "../src/spatial-id/index.ts"
       ],
+      "@airbee-project/kasane-client/time": ["../src/time/index.ts"],
       "@airbee-project/kasane-client/geometry": ["../src/geometry/index.ts"],
+      "@airbee-project/kasane-client/collection": [
+        "../src/collection/index.ts"
+      ],
       "@airbee-project/kasane-client/client": ["../src/client/index.ts"],
       "@airbee-project/kasane-client/client/database": [
         "../src/client/database/index.ts"

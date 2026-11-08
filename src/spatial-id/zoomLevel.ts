@@ -99,7 +99,7 @@ export class ZoomLevel {
   }
 }
 
-/** 時間軸のズームレベル（`0` 以上 {@link TZoomLevel.MAX} 以下）。{@link FlexId} でのみ使う。 */
+/** 時間軸のズームレベル（`0` 以上 {@link TZoomLevel.MAX} 以下）。{@link spatial-id!FlexId} でのみ使う。 */
 export class TZoomLevel {
   /** 時間軸のズームレベルの最小値。 */
   public static readonly MIN = 0;
@@ -123,7 +123,7 @@ export class TZoomLevel {
    * `z` から {@link TZoomLevel} を得る。
    * `z` は `0` 以上 {@link TZoomLevel.MAX} 以下の整数でなければならない。
    *
-   * @throws {@link SpatialIdError} `ZOutOfRange` `z` が範囲外のとき
+   * @throws {@link spatial-id!SpatialIdError} `ZOutOfRange` `z` が範囲外のとき
    */
   public static create(z: number): TZoomLevel {
     const zoom = Number.isInteger(z) ? TZoomLevel.ALL[z] : undefined;
@@ -151,7 +151,7 @@ export class TZoomLevel {
   /**
    * `index` がこのズームレベルの範囲に収まるかを検証する。
    *
-   * @throws {@link SpatialIdError} `TOutOfRange` `index` が範囲外のとき
+   * @throws {@link spatial-id!SpatialIdError} `TOutOfRange` `index` が範囲外のとき
    * @internal
    */
   public checkIndex(index: number): void {

@@ -23,6 +23,17 @@
         "default": "./dist/spatial-id/index.cjs"
       }
     },
+    "./time": {
+      "kasane-source": "./src/time/index.ts",
+      "import": {
+        "types": "./dist/time/index.d.ts",
+        "default": "./dist/time/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/time/index.d.ts",
+        "default": "./dist/time/index.cjs"
+      }
+    },
     "./geometry": {
       "kasane-source": "./src/geometry/index.ts",
       "import": {
@@ -32,6 +43,17 @@
       "require": {
         "types": "./dist/cjs/geometry/index.d.ts",
         "default": "./dist/geometry/index.cjs"
+      }
+    },
+    "./collection": {
+      "kasane-source": "./src/collection/index.ts",
+      "import": {
+        "types": "./dist/collection/index.d.ts",
+        "default": "./dist/collection/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/collection/index.d.ts",
+        "default": "./dist/collection/index.cjs"
       }
     },
     "./client": {
@@ -84,8 +106,14 @@
       "spatial-id": [
         "./dist/spatial-id/index.d.ts"
       ],
+      "time": [
+        "./dist/time/index.d.ts"
+      ],
       "geometry": [
         "./dist/geometry/index.d.ts"
+      ],
+      "collection": [
+        "./dist/collection/index.d.ts"
       ],
       "client": [
         "./dist/client/index.d.ts"
@@ -115,6 +143,7 @@
     "!dist/wasm/*.map",
     "src",
     "!src/client/wasm/gen",
+    "!src/collection/wasm/gen",
     "README.md"
   ],
   "scripts": {

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { Interval } from "../../time/interval.js";
+import { TimeSpan } from "../../time/timeSpan.js";
 import { SpatialIdError } from "../error.js";
 import { FlexId } from "../flexId.js";
-import { Interval } from "../interval.js";
 import { RangeId } from "../rangeId.js";
 import { SingleId } from "../singleId.js";
-import { TimeSpan } from "../timeSpan.js";
 import { TZoomLevel } from "../zoomLevel.js";
 
 function expectKind(fn: () => unknown, kind: SpatialIdError["info"]["kind"]) {

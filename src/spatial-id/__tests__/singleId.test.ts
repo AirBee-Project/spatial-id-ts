@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { Interval } from "../../time/interval.js";
 import { SpatialIdError } from "../error.js";
 import { FlexId } from "../flexId.js";
-import { Interval } from "../interval.js";
 import { SingleId } from "../singleId.js";
 
 describe("SingleId.create（生成と検証）", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Coordinate } from "../../geometry/coordinate.js";
+import { Interval } from "../../time/interval.js";
 import { FlexId } from "../flexId.js";
-import { Interval } from "../interval.js";
 import { RangeId } from "../rangeId.js";
 import { SingleId } from "../singleId.js";
 import type { SpatialId } from "../spatialId.js";

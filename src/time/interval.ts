@@ -1,7 +1,7 @@
-import { SpatialIdError } from "./error.js";
+import { SpatialIdError } from "../spatial-id/error.js";
+import { TZoomLevel } from "../spatial-id/zoomLevel.js";
 import { TimeSegment } from "./timeSegment.js";
 import { TimeSpan } from "./timeSpan.js";
-import { TZoomLevel } from "./zoomLevel.js";
 
 /**
  * 時間間隔 `{i}`を表現する型。よく使う値は定数として用意している。
@@ -43,7 +43,7 @@ export class Interval {
    * 秒数から {@link Interval} を作成する。
    * `seconds` は正の整数で、{@link Interval.MAX_SECONDS} 以下でなければならない。
    *
-   * @throws {@link SpatialIdError} `TIntervalError` `seconds` が不正なとき
+   * @throws {@link spatial-id!SpatialIdError} `TIntervalError` `seconds` が不正なとき
    */
   public static create(seconds: number): Interval {
     if (
@@ -59,7 +59,7 @@ export class Interval {
   /**
    * {@link Interval} 自身、または秒数の整数のどちらからでも {@link Interval} を得る。
    *
-   * @throws {@link SpatialIdError} `TIntervalError` 秒数が不正なとき
+   * @throws {@link spatial-id!SpatialIdError} `TIntervalError` 秒数が不正なとき
    */
   public static from(input: Interval | number): Interval {
     return input instanceof Interval ? input : Interval.create(input);
@@ -68,7 +68,7 @@ export class Interval {
   /**
    * Unix 時刻（秒）が属する時間インデックス `t = floor(u / i)` を返す。
    *
-   * @throws {@link SpatialIdError} `TOutOfRange` 計算した `t` が 0 以上の有限の数でないとき
+   * @throws {@link spatial-id!SpatialIdError} `TOutOfRange` 計算した `t` が 0 以上の有限の数でないとき
    */
   public indexOf(unixSeconds: number): number {
     const t = Math.floor(unixSeconds / this.value);
@@ -91,7 +91,7 @@ export class Interval {
   /**
    * 秒数が2の冪かを判定する。
    *
-   * 2の冪であれば、時間は {@link FlexId} の時間軸の1Segmentに収まる。
+   * 2の冪であれば、時間は {@link spatial-id!FlexId} の時間軸の1Segmentに収まる。
    * そうでない間隔（例: 1800秒）は、木構造へ入れるときに複数のSegmentへ分解される。
    */
   public isPowerOfTwo(): boolean {
@@ -110,10 +110,10 @@ export class Interval {
   }
 
   /**
-   * `{i}` と `{t}` を、{@link FlexId} が持てる時間軸の1Segmentへ直す。
+   * `{i}` と `{t}` を、{@link spatial-id!FlexId} が持てる時間軸の1Segmentへ直す。
    *
-   * @throws {@link SpatialIdError} `TIntervalError` 秒数が2の冪でないとき
-   * @throws {@link SpatialIdError} `TOutOfRange` `t` が範囲外のとき
+   * @throws {@link spatial-id!SpatialIdError} `TIntervalError` 秒数が2の冪でないとき
+   * @throws {@link spatial-id!SpatialIdError} `TOutOfRange` `t` が範囲外のとき
    * @internal
    */
   public asSegment(t: number): TimeSegment {
@@ -128,7 +128,7 @@ export class Interval {
   /**
    * `{i}` と `{t}` の範囲（両端含む）が占める絶対秒区間を、検証して返す。
    *
-   * @throws {@link SpatialIdError} `TOutOfRange` 区間が不正、または終端が {@link Interval.MAX_SECONDS} を超えるとき
+   * @throws {@link spatial-id!SpatialIdError} `TOutOfRange` 区間が不正、または終端が {@link Interval.MAX_SECONDS} を超えるとき
    * @internal
    */
   public validatedSpan(tMin: number, tMax: number): TimeSpan {

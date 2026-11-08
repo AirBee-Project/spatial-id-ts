@@ -17,7 +17,7 @@ import {
   type UnaryResponse,
 } from "@connectrpc/connect";
 
-/** `wasm/` から作る Wasm 版 `Kasane` のうち、Transport が使う部分。 */
+/** `wasm/kasane/` から作る Wasm 版 `Kasane` のうち、Transport が使う部分。 */
 export interface InMemoryKasane {
   handle(method: string, request: Uint8Array): Uint8Array[];
 }

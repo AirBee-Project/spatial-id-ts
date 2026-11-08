@@ -1,4 +1,4 @@
-import { SpatialIdError } from "./error.js";
+import { SpatialIdError } from "../spatial-id/error.js";
 import { Interval } from "./interval.js";
 
 /**
