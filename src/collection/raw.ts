@@ -10,6 +10,7 @@ import { initSync } from "./wasm/gen/spatial_id.js";
 import wasm from "./wasm/gen/spatial_id_bg.base64.js";
 
 export {
+  Query as RawQuery,
   SpatialIdMap as RawMap,
   SpatialIdSet as RawSet,
 } from "./wasm/gen/spatial_id.js";

@@ -37,3 +37,4 @@
 export { SpatialIdSet } from "./spatialIdSet.js";
 export { SpatialIdMap } from "./spatialIdMap.js";
 export type { SpatialIdJson } from "./json.js";
+export { Query, type MergePolicy, type FalloffPattern } from "./query.js";

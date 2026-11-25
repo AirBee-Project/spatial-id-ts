@@ -1,7 +1,5 @@
 # spatial-id-ts
 - 時空間IDの基礎的な型
-- [Kasane v0.7](https://github.com/AirBee-Project/Kasane)との接続機能
-- インメモリの Kasane（Wasm）
 - 時空間IDの集合とマップ（Wasm）
 
 ## import
@@ -10,36 +8,18 @@
 
 | サブパス | 中身 |
 | :--- | :--- |
-| `@airbee-project/kasane-client/spatial-id` | `SingleId`、`RangeId`、`FlexId`、`ZoomLevel`、`SpatialIdError` |
-| `@airbee-project/kasane-client/time` | `Interval`、`AllowedIntervals`、`TZoomLevel` |
-| `@airbee-project/kasane-client/geometry` | `Coordinate`、`GeometryError` |
-| `@airbee-project/kasane-client/collection` | `SpatialIdSet`、`SpatialIdMap` |
-| `@airbee-project/kasane-client/kasane-client` | `KasaneClient`、通信エラーの判定関数 |
-| `@airbee-project/kasane-client/kasane-client/database` | `DatabaseHandle`、`TableHandle`、テーブルの型 |
-| `@airbee-project/kasane-client/kasane-client/query` | `query`、`QueryBuilder` |
-| `@airbee-project/kasane-client/kasane-client/result` | `ResultStream` |
+| `@airbee-project/spatial-id/spatial-id` | `SingleId`、`RangeId`、`FlexId`、`ZoomLevel`、`SpatialIdError` |
+| `@airbee-project/spatial-id/time` | `Interval`、`AllowedIntervals`、`TZoomLevel` |
+| `@airbee-project/spatial-id/geometry` | `Coordinate`、`GeometryError` |
+| `@airbee-project/spatial-id/collection` | `SpatialIdSet`、`SpatialIdMap`、`Query` |
 
-`spatial-id`、`time`、`geometry` は、Connect や Wasm を読み込みません。
-
-## 接続
-
-```ts
-import { KasaneClient } from "@airbee-project/kasane-client/kasane-client";
-
-// grpc-web で Kasane サーバーにつなぐ。複数の URL を渡すと、接続できないサーバーを飛ばす。
-const client = await KasaneClient.connect("http://localhost:5172", "root", "password");
-
-// プロセス内で動くインメモリの Kasane。データはこのクライアントだけが持ち、利用者は root 固定。
-const local = await KasaneClient.inMemory();
-```
-
-`inMemory()` は Node、Bun、Deno、ブラウザ、Cloudflare Workers で動きます。Workers では Wrangler が `workerd` 条件で `.wasm` を別モジュールとして読み込み、それ以外の環境では JS に埋め込んだ Wasm を使います。
+`spatial-id`、`time`、`geometry` は、Wasm を読み込みません。
 
 ## 集合とマップ
 
 ```ts
-import { SpatialIdMap, SpatialIdSet } from "@airbee-project/kasane-client/collection";
-import { RangeId, SingleId } from "@airbee-project/kasane-client/spatial-id";
+import { SpatialIdMap, SpatialIdSet } from "@airbee-project/spatial-id/collection";
+import { RangeId, SingleId } from "@airbee-project/spatial-id/spatial-id";
 
 // 重なる ID を挿入しても、同じ場所を二重には持たない。
 const set = new SpatialIdSet([RangeId.create(4, 3, [2, 3], 1)]);
@@ -59,6 +39,15 @@ const text = JSON.stringify(map);
 const restored = SpatialIdMap.fromJSON<number>(JSON.parse(text));
 ```
 
+`query()` で、集合やマップを入力にした `Query` を作れます。演算をつなげて組み立て、`get` や `toMap` を呼んだときに評価します。
+
+```ts
+// 値を X 方向へ減衰させながら広げ、重なりは大きい方を採る。さらに別のマップと足し合わせる。
+const risk = map.query().falloffX(20, 5, "max").merge(other, "sum").toMap();
+```
+
+数値の演算（`falloffX`、`filterIn` など）と数値の規則（`sum`、`average` など）は、値が安全な整数のマップでだけ使えます。
+
 [spatial-id-rs](https://github.com/AirBee-Project/spatial-id-rs) を Wasm にしたもので、Node、Bun、Deno、ブラウザで動きます。Cloudflare Workers では動きません。Wasm は最初にコンストラクターを呼んだときに同期で読み込むので、初期化を待つ必要はありません。
 
 中身は Wasm のメモリに置き、GC で回収されたときに解放するので、後始末は要りません。大きな集合を作っては捨てることを繰り返すときは、`using` で宣言すると、スコープを抜けた時点で解放できます。
@@ -71,31 +60,16 @@ bun run ci       # 型チェック、lint、テスト
 bun run build
 ```
 
-LMDB 版の Kasane サーバー（root のパスワードは `password`）を起動し、`KASANE_URL` に URL を渡すと、サーバーと Wasm 版で同じ操作の結果を比べるテストも動きます。
+### Wasm の更新
+
+`src/collection/wasm/gen` の Wasm は [spatial-id-rs](https://github.com/AirBee-Project/spatial-id-rs) の `main` から作り、使ったコミットを `wasm/spatial-id/Cargo.lock` に記録しています。次のコマンドで `main` の最新を取り直し、作り直します。
 
 ```bash
-KASANE_URL=http://localhost:5172 bun run test
-```
-
-### 生成コードと Wasm の更新
-
-生成コードは Rust の crate の `main` から作ります。
-
-| 対象 | 生成先 | crate | 使ったコミットの記録 |
-| :--- | :--- | :--- | :--- |
-| `kasane` | `src/proto/gen`（proto から生成した TypeScript）、`src/kasane-client/wasm/gen`（Wasm） | Kasane | `wasm/kasane/Cargo.lock` |
-| `spatial-id` | `src/collection/wasm/gen`（Wasm） | spatial-id-rs | `wasm/spatial-id/Cargo.lock` |
-
-次のコマンドで `main` の最新を取り直し、作り直します。対象を指定すると、その対象だけを作り直します。`kasane` の2つの生成先は同じコミットから作ります。
-
-```bash
-bun run generate              # すべて
-bun run generate spatial-id   # spatial-id だけ
+bun run generate
 ```
 
 必要なもの:
 
 - cargo と `wasm32-unknown-unknown` ターゲット（`rustup target add wasm32-unknown-unknown`）
-- protoc（`kasane` のみ）
-- 各 `Cargo.lock` と同じ版の wasm-bindgen-cli（違うとコマンドが版を示して止まります）
+- `wasm/spatial-id/Cargo.lock` と同じ版の wasm-bindgen-cli（違うとコマンドが版を示して止まります）
 - wasm-opt（任意。あればサイズを縮めます）

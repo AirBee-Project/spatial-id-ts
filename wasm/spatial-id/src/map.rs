@@ -1,4 +1,5 @@
 use crate::codec::{decode, decode_intervals, encode_entries};
+use crate::value::Value;
 use js_sys::Array;
 use spatial_id::collection::SpatialIdMap as Map;
 use wasm_bindgen::prelude::*;
@@ -6,7 +7,7 @@ use wasm_bindgen::prelude::*;
 /// 値は JS の `===` で比べる（`JsValue` の `PartialEq`）。
 #[wasm_bindgen]
 #[derive(Default)]
-pub struct SpatialIdMap(pub(crate) Map<JsValue>);
+pub struct SpatialIdMap(pub(crate) Map<Value>);
 
 #[wasm_bindgen]
 impl SpatialIdMap {
@@ -20,7 +21,7 @@ impl SpatialIdMap {
         id: &[f64],
         #[wasm_bindgen(unchecked_param_type = "unknown")] value: JsValue,
     ) -> Result<(), JsError> {
-        self.0.insert(decode(id)?, value);
+        self.0.insert(decode(id)?, Value(value));
         Ok(())
     }
 

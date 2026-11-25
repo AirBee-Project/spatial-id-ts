@@ -9,6 +9,7 @@ import {
   encodeJsonEntry,
   type SpatialIdJson,
 } from "./json.js";
+import { Query } from "./query.js";
 import {
   decodeEntries,
   decodeFlexIds,
@@ -240,6 +241,15 @@ export class SpatialIdMap<V> implements Iterable<[RangeId, V]>, Disposable {
       },
     );
     return encodeJsonDocument({ name: "", value, ids });
+  }
+
+  /**
+   * このコレクションを入力にした {@link Query} を作る。
+   *
+   * 評価は {@link Query.get} などを呼んだときに行い、その時点の中身を使う。
+   */
+  public query(): Query<V> {
+    return new Query((raw) => raw.pushMap(this.owner.raw));
   }
 
   /**

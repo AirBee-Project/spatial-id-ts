@@ -1,27 +1,19 @@
 // 依存する Rust crate の main の最新を取り直し、生成コードを作る。
-// - kasane: src/proto/gen と src/kasane-client/wasm/gen（同じコミットから作る）
 // - spatial-id: src/collection/wasm/gen
 // 引数で対象を絞れる（例: `bun run generate spatial-id`）。省略するとすべて作る。
-// 必要なもの: cargo（wasm32-unknown-unknown ターゲット）、protoc、Cargo.lock と同じ版の wasm-bindgen。
+// 必要なもの: cargo（wasm32-unknown-unknown ターゲット）、Cargo.lock と同じ版の wasm-bindgen。
 // wasm-opt があればサイズを縮める。
 
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { create, fromBinary } from "@bufbuild/protobuf";
-import {
-  CodeGeneratorRequestSchema,
-  FileDescriptorSetSchema,
-} from "@bufbuild/protobuf/wkt";
-import { protocGenEs } from "@bufbuild/protoc-gen-es/dist/cjs/src/protoc-gen-es-plugin.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const target = "wasm32-unknown-unknown";
 
-function run(cmd: string[], options: { optional?: boolean } = {}): string {
+function run(cmd: string[]): string {
   const result = Bun.spawnSync(cmd, { cwd: root, stderr: "inherit" });
   if (!result.success) {
-    if (options.optional) return "";
     throw new Error(`failed: ${cmd.join(" ")}`);
   }
   return result.stdout.toString();
@@ -118,69 +110,6 @@ function commitOf(manifest: string, repository: string): string | undefined {
   )?.[1];
 }
 
-function generateKasane(): void {
-  const manifest = join(root, "wasm", "kasane", "Cargo.toml");
-  const genDir = join(root, "src", "proto", "gen");
-  const wasmDir = join(root, "src", "kasane-client", "wasm", "gen");
-  const packages = update(manifest, "kasane");
-
-  // codegen
-  const protoDir = join(
-    dirname(find(packages, "kasane").manifest_path),
-    "proto",
-  );
-  const protoFiles = [
-    "auth.proto",
-    "common.proto",
-    "data.proto",
-    "database.proto",
-    "query.proto",
-    "system.proto",
-    "table.proto",
-    "users.proto",
-  ];
-  const descriptorPath = join(dirname(manifest), "target", "kasane.protoset");
-  mkdirSync(dirname(descriptorPath), { recursive: true });
-  run([
-    "protoc",
-    `--proto_path=${protoDir}`,
-    "--include_imports",
-    "--include_source_info",
-    `--descriptor_set_out=${descriptorPath}`,
-    ...protoFiles,
-  ]);
-  const response = protocGenEs.run(
-    create(CodeGeneratorRequestSchema, {
-      fileToGenerate: protoFiles,
-      parameter: "target=ts,import_extension=js",
-      protoFile: fromBinary(
-        FileDescriptorSetSchema,
-        readFileSync(descriptorPath),
-      ).file,
-    }),
-  );
-  if (response.error) throw new Error(response.error);
-  rmSync(genDir, { recursive: true, force: true });
-  for (const file of response.file) {
-    const path = join(genDir, file.name);
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, file.content);
-  }
-
-  // wasm
-  buildWasm(packages, manifest, "kasane_wasm", wasmDir, "kasane");
-  // Workers は .wasm の import を WebAssembly.Module として渡すので、型もそれに合わせる。
-  // NodeNext は `.wasm` の型を `.d.wasm.ts` から読む（allowArbitraryExtensions）。
-  writeFileSync(
-    join(wasmDir, "kasane_bg.d.wasm.ts"),
-    "declare const module: WebAssembly.Module;\nexport default module;\n",
-  );
-
-  console.log(
-    `generated from Kasane ${find(packages, "kasane").version} (${commitOf(manifest, "Kasane")})`,
-  );
-}
-
 function generateSpatialId(): void {
   const manifest = join(root, "wasm", "spatial-id", "Cargo.toml");
   const wasmDir = join(root, "src", "collection", "wasm", "gen");
@@ -197,7 +126,6 @@ function generateSpatialId(): void {
 }
 
 const generators: Record<string, () => void> = {
-  kasane: generateKasane,
   "spatial-id": generateSpatialId,
 };
 const selected = process.argv.slice(2);

@@ -6,7 +6,13 @@ const run = (args: string[]) =>
   });
 
 const processes = [
-  run(["typedoc", "--watch", "--preserveWatchOutput"]),
+  run([
+    "typedoc",
+    "--options",
+    "scripts/typedoc.json",
+    "--watch",
+    "--preserveWatchOutput",
+  ]),
   // typedoc は1回の再生成で多数のファイルを書くため、書き終わるまで再読み込みを待たせる
   run([
     "browser-sync",

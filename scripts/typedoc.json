@@ -1,0 +1,23 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "../src/spatial-id/index.ts",
+    "../src/time/index.ts",
+    "../src/geometry/index.ts",
+    "../src/collection/index.ts"
+  ],
+  "tsconfig": "./tsconfig.build.json",
+  "out": "../docs",
+  "excludeInternal": true,
+  "excludeExternals": true,
+  "sort": ["kind", "source-order"],
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": true
+  },
+  "sortEntryPoints": false,
+  "navigation": { "includeCategories": true },
+  "categoryOrder": ["Point", "Shape", "*"],
+  "defaultCategory": "Other"
+}

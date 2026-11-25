@@ -1,7 +1,7 @@
 {
-  "name": "@airbee-project/kasane-client",
+  "name": "@airbee-project/spatial-id",
   "version": "0.10.1",
-  "description": "kasane-client",
+  "description": "spatial-id",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AirBee-Project/spatial-id-ts.git"
@@ -13,7 +13,7 @@
   "packageManager": "bun@1.3.11",
   "exports": {
     "./spatial-id": {
-      "kasane-source": "./src/spatial-id/index.ts",
+      "spatial-id-source": "./src/spatial-id/index.ts",
       "import": {
         "types": "./dist/spatial-id/index.d.ts",
         "default": "./dist/spatial-id/index.js"
@@ -24,7 +24,7 @@
       }
     },
     "./time": {
-      "kasane-source": "./src/time/index.ts",
+      "spatial-id-source": "./src/time/index.ts",
       "import": {
         "types": "./dist/time/index.d.ts",
         "default": "./dist/time/index.js"
@@ -35,7 +35,7 @@
       }
     },
     "./geometry": {
-      "kasane-source": "./src/geometry/index.ts",
+      "spatial-id-source": "./src/geometry/index.ts",
       "import": {
         "types": "./dist/geometry/index.d.ts",
         "default": "./dist/geometry/index.js"
@@ -46,7 +46,7 @@
       }
     },
     "./collection": {
-      "kasane-source": "./src/collection/index.ts",
+      "spatial-id-source": "./src/collection/index.ts",
       "import": {
         "types": "./dist/collection/index.d.ts",
         "default": "./dist/collection/index.js"
@@ -54,50 +54,6 @@
       "require": {
         "types": "./dist/cjs/collection/index.d.ts",
         "default": "./dist/collection/index.cjs"
-      }
-    },
-    "./kasane-client": {
-      "kasane-source": "./src/kasane-client/index.ts",
-      "import": {
-        "types": "./dist/kasane-client/index.d.ts",
-        "default": "./dist/kasane-client/index.js"
-      },
-      "require": {
-        "types": "./dist/cjs/kasane-client/index.d.ts",
-        "default": "./dist/kasane-client/index.cjs"
-      }
-    },
-    "./kasane-client/database": {
-      "kasane-source": "./src/kasane-client/database/index.ts",
-      "import": {
-        "types": "./dist/kasane-client/database/index.d.ts",
-        "default": "./dist/kasane-client/database/index.js"
-      },
-      "require": {
-        "types": "./dist/cjs/kasane-client/database/index.d.ts",
-        "default": "./dist/kasane-client/database/index.cjs"
-      }
-    },
-    "./kasane-client/query": {
-      "kasane-source": "./src/kasane-client/query/index.ts",
-      "import": {
-        "types": "./dist/kasane-client/query/index.d.ts",
-        "default": "./dist/kasane-client/query/index.js"
-      },
-      "require": {
-        "types": "./dist/cjs/kasane-client/query/index.d.ts",
-        "default": "./dist/kasane-client/query/index.cjs"
-      }
-    },
-    "./kasane-client/result": {
-      "kasane-source": "./src/kasane-client/result/index.ts",
-      "import": {
-        "types": "./dist/kasane-client/result/index.d.ts",
-        "default": "./dist/kasane-client/result/index.js"
-      },
-      "require": {
-        "types": "./dist/cjs/kasane-client/result/index.d.ts",
-        "default": "./dist/kasane-client/result/index.cjs"
       }
     }
   },
@@ -114,67 +70,38 @@
       ],
       "collection": [
         "./dist/collection/index.d.ts"
-      ],
-      "kasane-client": [
-        "./dist/kasane-client/index.d.ts"
-      ],
-      "kasane-client/database": [
-        "./dist/kasane-client/database/index.d.ts"
-      ],
-      "kasane-client/query": [
-        "./dist/kasane-client/query/index.d.ts"
-      ],
-      "kasane-client/result": [
-        "./dist/kasane-client/result/index.d.ts"
       ]
-    }
-  },
-  "imports": {
-    "#kasane-wasm": {
-      "kasane-source": "./src/kasane-client/wasm/inline.ts",
-      "workerd": "./dist/wasm/workerd.js",
-      "import": "./dist/wasm/inline.js",
-      "require": "./dist/wasm/inline.cjs",
-      "default": "./dist/wasm/inline.js"
     }
   },
   "files": [
     "dist",
-    "!dist/wasm/*.map",
     "src",
-    "!src/kasane-client/wasm/gen",
     "!src/collection/wasm/gen",
     "README.md"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup --config scripts/tsup.config.ts",
     "clean": "rm -rf dist docs coverage wasm/*/target node_modules",
-    "dev": "bun --conditions kasane-source playground/index.ts",
+    "dev": "bun --conditions spatial-id-source playground/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint --write .",
     "fmt": "biome format --write .",
     "check": "tsc --noEmit && biome check .",
     "ci": "tsc --noEmit && biome check . && bun run docs:check && bun run test",
-    "test": "bun test --conditions kasane-source",
-    "test:watch": "bun test --conditions kasane-source --watch",
+    "test": "bun test --conditions spatial-id-source",
+    "test:watch": "bun test --conditions spatial-id-source --watch",
     "generate": "bun scripts/generate.ts",
     "docs": "bun scripts/docs-serve.ts",
-    "docs:build": "typedoc",
-    "docs:check": "typedoc --emit none --treatWarningsAsErrors"
+    "docs:build": "typedoc --options scripts/typedoc.json",
+    "docs:check": "typedoc --options scripts/typedoc.json --emit none --treatWarningsAsErrors"
   },
   "keywords": [],
   "devDependencies": {
     "@biomejs/biome": "^2.5.12",
-    "@bufbuild/protoc-gen-es": "^2.14.1",
     "browser-sync": "^3.0.4",
     "tsup": "^8.5.1",
     "typedoc": "^0.28.20",
     "typescript": "~6.0.0",
     "vitest": "^5.0.0"
-  },
-  "dependencies": {
-    "@bufbuild/protobuf": "^2.14.1",
-    "@connectrpc/connect": "^2.1.2",
-    "@connectrpc/connect-web": "^2.1.2"
   }
 }

@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 #[derive(Default)]
-pub struct SpatialIdSet(Set);
+pub struct SpatialIdSet(pub(crate) Set);
 
 #[wasm_bindgen]
 impl SpatialIdSet {

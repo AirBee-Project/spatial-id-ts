@@ -30,6 +30,11 @@ pub(crate) fn decode(id: &[f64]) -> Result<RangeId, JsError> {
     .map_err(to_js_error)
 }
 
+/// 連ねた数値列を、1つ分ずつ [`decode`] する。
+pub(crate) fn decode_all(ids: &[f64]) -> Result<Vec<RangeId>, JsError> {
+    ids.chunks(10).map(decode).collect()
+}
+
 pub(crate) fn decode_intervals(
     seconds: Option<Vec<f64>>,
 ) -> Result<Option<AllowedIntervals>, JsError> {

@@ -84,8 +84,8 @@ jobs:
       - name: Import package
         working-directory: consumer
         run: |
-          esm='import { SingleId } from "@airbee-project/kasane-client/spatial-id"; console.log(SingleId.create(5, 3, 2, 10).toString());'
-          cjs='const { SingleId } = require("@airbee-project/kasane-client/spatial-id"); console.log(SingleId.create(5, 3, 2, 10).toString());'
+          esm='import { SingleId } from "@airbee-project/spatial-id/spatial-id"; console.log(SingleId.create(5, 3, 2, 10).toString());'
+          cjs='const { SingleId } = require("@airbee-project/spatial-id/spatial-id"); console.log(SingleId.create(5, 3, 2, 10).toString());'
           case "${{ matrix.runtime }}" in
             node-esm) node --input-type=module -e "$esm" ;;
             node-cjs) node -e "$cjs" ;;
@@ -93,87 +93,19 @@ jobs:
             deno) deno eval "$esm" ;;
           esac
 
-      # サブパスごとにクラスが複製されると、spatial-id で作った SingleId を kasane-client が判定できなくなる。
-      - name: Use in-memory Kasane (Wasm) across subpaths
+      # サブパスごとにクラスが複製されると、spatial-id で作った SingleId を collection が判定できなくなる。
+      - name: Use collection (Wasm) across subpaths
         working-directory: consumer
         run: |
-          body='const c = await KasaneClient.inMemory(); await c.createDatabase("db"); const d = c.database("db"); await d.createTable("t", "int", 20); const id = SingleId.create(20, 0, 100, 200); await d.table("t").insert(10n, id); const r = await d.table("t").search(id).toArray(); const out = r.map((x) => `${x.id}=${x.value}`).join(","); if (out !== "20/0/100/200=10") throw new Error(out); console.log(out);'
-          esm="import { SingleId } from \"@airbee-project/kasane-client/spatial-id\"; import { KasaneClient } from \"@airbee-project/kasane-client/kasane-client\"; $body"
-          cjs="const { SingleId } = require(\"@airbee-project/kasane-client/spatial-id\"); const { KasaneClient } = require(\"@airbee-project/kasane-client/kasane-client\"); (async () => { $body })().catch((e) => { console.error(e); process.exit(1); });"
+          body='const id = SingleId.create(20, 0, 100, 200); const map = new SpatialIdMap([[id, 10]]); const out = map.query().get(id).map(([r, v]) => `${r}=${v}`).join(","); if (out !== "20/0/100/200=10") throw new Error(out); console.log(out);'
+          esm="import { SingleId } from \"@airbee-project/spatial-id/spatial-id\"; import { SpatialIdMap } from \"@airbee-project/spatial-id/collection\"; $body"
+          cjs="const { SingleId } = require(\"@airbee-project/spatial-id/spatial-id\"); const { SpatialIdMap } = require(\"@airbee-project/spatial-id/collection\"); $body"
           case "${{ matrix.runtime }}" in
             node-esm) node --input-type=module -e "$esm" ;;
             node-cjs) node -e "$cjs" ;;
             bun) bun -e "$esm" ;;
             deno) deno eval "$esm" ;;
           esac
-
-  # Workers は実行時に bytes から Wasm をコンパイルできないので、Wrangler でバンドルしたものを workerd で動かす。
-  workerd-smoke-test:
-    name: Runtime Smoke Test (workerd)
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download package tarball
-        uses: actions/download-artifact@v4
-        with:
-          name: package
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Bundle a Worker with Wrangler
-        run: |
-          mkdir -p consumer/src
-          cd consumer
-          npm init -y
-          npm install ../package.tgz wrangler@4
-          cat > src/worker.js <<'EOF'
-          import { KasaneClient } from "@airbee-project/kasane-client/kasane-client";
-          import { SingleId } from "@airbee-project/kasane-client/spatial-id";
-
-          export default {
-            async fetch() {
-              const c = await KasaneClient.inMemory();
-              await c.createDatabase("db");
-              const d = c.database("db");
-              await d.createTable("t", "int", 20);
-              const id = SingleId.create(20, 0, 100, 200);
-              await d.table("t").insert(10n, id);
-              const r = await d.table("t").search(id).toArray();
-              return new Response(r.map((x) => `${x.id}=${x.value}`).join(","));
-            },
-          };
-          EOF
-          npx wrangler deploy --dry-run --outdir out --name smoke --compatibility-date 2025-09-01 src/worker.js
-
-      - name: Run the Worker on workerd
-        working-directory: consumer
-        run: |
-          wasm=$(cd out && ls *.wasm)
-          cat > config.capnp <<EOF
-          using Workerd = import "/workerd/workerd.capnp";
-          const config :Workerd.Config = (
-            services = [(name = "main", worker = .w)],
-            sockets = [(name = "http", address = "127.0.0.1:8787", http = (), service = "main")],
-          );
-          const w :Workerd.Worker = (
-            modules = [
-              (name = "worker.js", esModule = embed "out/worker.js"),
-              (name = "$wasm", wasm = embed "out/$wasm"),
-            ],
-            compatibilityDate = "2025-09-01",
-          );
-          EOF
-          npx workerd serve config.capnp > workerd.log 2>&1 &
-          for i in $(seq 1 30); do
-            out=$(curl -sf http://127.0.0.1:8787/) && break
-            sleep 1
-          done
-          echo "$out"
-          kill %1
-          if [ "$out" != "20/0/100/200=10" ]; then cat workerd.log; exit 1; fi
 
   consumer-typecheck:
     name: Consumer Typecheck (${{ matrix.format }}, ${{ matrix.resolution }})
@@ -211,15 +143,16 @@ jobs:
         working-directory: consumer
         run: |
           cat > index.ts <<'EOF'
-          import { SingleId, SpatialIdError } from "@airbee-project/kasane-client/spatial-id";
-          import { Coordinate } from "@airbee-project/kasane-client/geometry";
-          import { KasaneClient } from "@airbee-project/kasane-client/kasane-client";
-          import type { TableInfo } from "@airbee-project/kasane-client/kasane-client/database";
-          import { query } from "@airbee-project/kasane-client/kasane-client/query";
-          import type { ResultItem } from "@airbee-project/kasane-client/kasane-client/result";
+          import { SingleId, SpatialIdError } from "@airbee-project/spatial-id/spatial-id";
+          import { AllowedIntervals, Interval } from "@airbee-project/spatial-id/time";
+          import { Coordinate } from "@airbee-project/spatial-id/geometry";
+          import { Query, SpatialIdMap, SpatialIdSet } from "@airbee-project/spatial-id/collection";
           export const id: SingleId = Coordinate.create(35, 139, 0).singleId(20);
-          export const q = query.source("db", "t");
-          export type T = [TableInfo, ResultItem, typeof KasaneClient, SpatialIdError];
+          export const set = new SpatialIdSet([id.timeWith(Interval.HOUR, 0)]);
+          export const ranges = set.reconstructedTimeRanges(AllowedIntervals.calendar());
+          export const map = new SpatialIdMap([[id, 1]]);
+          export const q: Query<number> = map.query().shiftX(20, 1);
+          export type T = [SpatialIdError];
           EOF
           case "${{ matrix.resolution }}" in
             bundler) module=esnext ;;

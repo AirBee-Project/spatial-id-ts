@@ -22,5 +22,14 @@
   "js/ts.inlayHints.parameterNames.enabled": "all",
   "js/ts.inlayHints.variableTypes.enabled": true,
   "js/ts.inlayHints.functionLikeReturnTypes.enabled": true,
-  "js/ts.inlayHints.enumMemberValues.enabled": true
+  "js/ts.inlayHints.enumMemberValues.enabled": true,
+  "files.exclude": {
+    "node_modules": true,
+    "dist": true,
+    "docs": true,
+    "coverage": true,
+    "wasm/*/target": true,
+    "src/collection/wasm/gen": true,
+    "playground/out": true
+  }
 }

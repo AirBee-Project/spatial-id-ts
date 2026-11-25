@@ -10,7 +10,7 @@ const fileOf = (relative: string) =>
 
 const pkg = JSON.parse(ts.sys.readFile(fileOf("../package.json")) ?? "") as {
   name: string;
-  exports: Record<string, { "kasane-source": string }>;
+  exports: Record<string, { "spatial-id-source": string }>;
 };
 const { config } = ts.readConfigFile(
   fileOf("./tsconfig.json"),
@@ -23,7 +23,7 @@ describe("playground の paths", () => {
     const fromExports = Object.fromEntries(
       Object.entries(pkg.exports).map(([subpath, target]) => [
         `${pkg.name}${subpath.slice(1)}`,
-        [target["kasane-source"].replace(/^\.\//, "../")],
+        [target["spatial-id-source"].replace(/^\.\//, "../")],
       ]),
     );
     expect(paths).toEqual(fromExports);

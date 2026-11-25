@@ -9,10 +9,10 @@
     "ignoreUnknown": false,
     "includes": [
       "**",
-      "!src/proto/gen",
-      "!src/kasane-client/wasm/gen",
       "!src/collection/wasm/gen",
       "!wasm/*/target",
+      "!playground/sample",
+      "!playground/out",
       "!docs"
     ]
   },

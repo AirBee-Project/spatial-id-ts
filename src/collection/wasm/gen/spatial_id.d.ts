@@ -1,6 +1,53 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export class Query {
+    free(): void;
+    [Symbol.dispose](): void;
+    /**
+     * `kind` は 0 が intersection、1 が difference。左側の値を残すので、右側の値は左側の型の値に置き換えてから重ねる。
+     */
+    binary(kind: number): void;
+    /**
+     * `axis` は 0 が F、1 が X、2 が Y。
+     */
+    extrude(axis: number, z: number, start: number, end: number, policy: number): void;
+    /**
+     * `axis` は 0 が F、1 が X、2 が Y。`direction` は 0 が座標の小さい側、1 が大きい側で、省くと両側。
+     */
+    falloff(axis: number, z: number, radius: number, direction: number | null | undefined, pattern: number, policy: number): void;
+    /**
+     * `kind` は 0 が `start` と等しい値、1 が `[start, end)` に入る値、2 が `[start, end)` の外の値を残す。
+     * 範囲の `start` と `end` を省くと、その側に端を設けない。
+     */
+    filterNumbers(kind: number, start?: number | null, end?: number | null): void;
+    /**
+     * `targets` の中にある部分を `[ID の数値列, 値の配列]` で返す。`targets` を省くと全体を返す。
+     *
+     * `overlapping` のとき `targets` で切り取らず、`flex` のとき ID を FlexId の数値列で返す。
+     */
+    get(targets: Float64Array | null | undefined, overlapping: boolean, flex: boolean): [Float64Array, unknown[]];
+    /**
+     * 積んだ2つを `policy` で重ね合わせる。
+     */
+    merge(policy: number): void;
+    constructor();
+    pushMap(map: SpatialIdMap): void;
+    pushSet(set: SpatialIdSet): void;
+    shift(z: number, f: number, x: number, y: number): void;
+    toMap(): SpatialIdMap;
+    toSet(): SpatialIdSet;
+    /**
+     * `kind` は 0 が filter、1 が map、2 が filterMap。filterMap は `undefined` を返した要素を取り除く。
+     *
+     * `withId` のとき `f` は `(flexId, value)`、そうでなければ `(value)` を受け取る。
+     * `flexId` は `[fz, f, xz, x, yz, y, tz, t]` の数値列。
+     */
+    transform(kind: number, with_id: boolean, f: Function): void;
+    validate(): void;
+    zoomOut(z: number, policy: number): void;
+}
+
 /**
  * 値は JS の `===` で比べる（`JsValue` の `PartialEq`）。
  */
@@ -63,8 +110,24 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
+    readonly __wbg_query_free: (a: number, b: number) => void;
     readonly __wbg_spatialidmap_free: (a: number, b: number) => void;
     readonly __wbg_spatialidset_free: (a: number, b: number) => void;
+    readonly query_binary: (a: number, b: number) => [number, number];
+    readonly query_extrude: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
+    readonly query_falloff: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number];
+    readonly query_filterNumbers: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
+    readonly query_get: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
+    readonly query_merge: (a: number, b: number) => [number, number];
+    readonly query_new: () => number;
+    readonly query_pushMap: (a: number, b: number) => void;
+    readonly query_pushSet: (a: number, b: number) => void;
+    readonly query_shift: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+    readonly query_toMap: (a: number) => [number, number, number];
+    readonly query_toSet: (a: number) => [number, number, number];
+    readonly query_transform: (a: number, b: number, c: number, d: any) => [number, number];
+    readonly query_validate: (a: number) => [number, number];
+    readonly query_zoomOut: (a: number, b: number, c: number) => [number, number];
     readonly spatialidmap_clear: (a: number) => void;
     readonly spatialidmap_count: (a: number) => number;
     readonly spatialidmap_difference: (a: number, b: number) => number;
@@ -110,9 +173,11 @@ export interface InitOutput {
     readonly spatialidset_spatialFaceNeighbors: (a: number, b: number, c: number) => [number, number, number, number];
     readonly spatialidset_spatialFaceNeighborsFlexIds: (a: number, b: number, c: number) => [number, number, number, number];
     readonly spatialidset_union: (a: number, b: number) => number;
+    readonly __wbindgen_exn_store: (a: number) => void;
+    readonly __externref_table_alloc: () => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
-    readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __externref_table_dealloc: (a: number) => void;
+    readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_start: () => void;
 }

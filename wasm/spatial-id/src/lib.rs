@@ -4,7 +4,10 @@
 
 mod codec;
 mod map;
+mod query;
 mod set;
+mod value;
 
 pub use map::SpatialIdMap;
+pub use query::Query;
 pub use set::SpatialIdSet;

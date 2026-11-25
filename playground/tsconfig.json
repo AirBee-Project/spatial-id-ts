@@ -3,26 +3,10 @@
   "compilerOptions": {
     // 自分自身のパッケージ名は補完の候補に出ないので、利用者と同じ import をエディタで補完できるように対応づける
     "paths": {
-      "@airbee-project/kasane-client/spatial-id": [
-        "../src/spatial-id/index.ts"
-      ],
-      "@airbee-project/kasane-client/time": ["../src/time/index.ts"],
-      "@airbee-project/kasane-client/geometry": ["../src/geometry/index.ts"],
-      "@airbee-project/kasane-client/collection": [
-        "../src/collection/index.ts"
-      ],
-      "@airbee-project/kasane-client/kasane-client": [
-        "../src/kasane-client/index.ts"
-      ],
-      "@airbee-project/kasane-client/kasane-client/database": [
-        "../src/kasane-client/database/index.ts"
-      ],
-      "@airbee-project/kasane-client/kasane-client/query": [
-        "../src/kasane-client/query/index.ts"
-      ],
-      "@airbee-project/kasane-client/kasane-client/result": [
-        "../src/kasane-client/result/index.ts"
-      ]
+      "@airbee-project/spatial-id/spatial-id": ["../src/spatial-id/index.ts"],
+      "@airbee-project/spatial-id/time": ["../src/time/index.ts"],
+      "@airbee-project/spatial-id/geometry": ["../src/geometry/index.ts"],
+      "@airbee-project/spatial-id/collection": ["../src/collection/index.ts"]
     }
   },
   "include": [".", "../src/**/index.ts"]

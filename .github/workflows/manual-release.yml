@@ -118,7 +118,7 @@ jobs:
 
             Install directly from this release:
             ```bash
-            bun add https://github.com/${{ github.repository }}/releases/download/v${{ needs.version.outputs.version }}/airbee-project-kasane-client-${{ needs.version.outputs.version }}.tgz
+            bun add https://github.com/${{ github.repository }}/releases/download/v${{ needs.version.outputs.version }}/airbee-project-spatial-id-${{ needs.version.outputs.version }}.tgz
             # or npm
-            npm install https://github.com/${{ github.repository }}/releases/download/v${{ needs.version.outputs.version }}/airbee-project-kasane-client-${{ needs.version.outputs.version }}.tgz
+            npm install https://github.com/${{ github.repository }}/releases/download/v${{ needs.version.outputs.version }}/airbee-project-spatial-id-${{ needs.version.outputs.version }}.tgz
             ```

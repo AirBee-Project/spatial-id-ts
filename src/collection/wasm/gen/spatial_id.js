@@ -1,5 +1,186 @@
 /* @ts-self-types="./spatial_id.d.ts" */
 
+export class Query {
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        QueryFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_query_free(ptr, 0);
+    }
+    /**
+     * `kind` は 0 が intersection、1 が difference。左側の値を残すので、右側の値は左側の型の値に置き換えてから重ねる。
+     * @param {number} kind
+     */
+    binary(kind) {
+        const ret = wasm.query_binary(this.__wbg_ptr, kind);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * `axis` は 0 が F、1 が X、2 が Y。
+     * @param {number} axis
+     * @param {number} z
+     * @param {number} start
+     * @param {number} end
+     * @param {number} policy
+     */
+    extrude(axis, z, start, end, policy) {
+        const ret = wasm.query_extrude(this.__wbg_ptr, axis, z, start, end, policy);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * `axis` は 0 が F、1 が X、2 が Y。`direction` は 0 が座標の小さい側、1 が大きい側で、省くと両側。
+     * @param {number} axis
+     * @param {number} z
+     * @param {number} radius
+     * @param {number | null | undefined} direction
+     * @param {number} pattern
+     * @param {number} policy
+     */
+    falloff(axis, z, radius, direction, pattern, policy) {
+        const ret = wasm.query_falloff(this.__wbg_ptr, axis, z, radius, isLikeNone(direction) ? 0xFFFFFF : direction, pattern, policy);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * `kind` は 0 が `start` と等しい値、1 が `[start, end)` に入る値、2 が `[start, end)` の外の値を残す。
+     * 範囲の `start` と `end` を省くと、その側に端を設けない。
+     * @param {number} kind
+     * @param {number | null} [start]
+     * @param {number | null} [end]
+     */
+    filterNumbers(kind, start, end) {
+        const ret = wasm.query_filterNumbers(this.__wbg_ptr, kind, !isLikeNone(start), isLikeNone(start) ? 0 : start, !isLikeNone(end), isLikeNone(end) ? 0 : end);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * `targets` の中にある部分を `[ID の数値列, 値の配列]` で返す。`targets` を省くと全体を返す。
+     *
+     * `overlapping` のとき `targets` で切り取らず、`flex` のとき ID を FlexId の数値列で返す。
+     * @param {Float64Array | null | undefined} targets
+     * @param {boolean} overlapping
+     * @param {boolean} flex
+     * @returns {[Float64Array, unknown[]]}
+     */
+    get(targets, overlapping, flex) {
+        const ptr = this.__destroy_into_raw();
+        var ptr0 = isLikeNone(targets) ? 0 : passArrayF64ToWasm0(targets, wasm.__wbindgen_malloc);
+        var len0 = WASM_VECTOR_LEN;
+        const ret = wasm.query_get(ptr, ptr0, len0, overlapping, flex);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * 積んだ2つを `policy` で重ね合わせる。
+     * @param {number} policy
+     */
+    merge(policy) {
+        const ret = wasm.query_merge(this.__wbg_ptr, policy);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    constructor() {
+        const ret = wasm.query_new();
+        this.__wbg_ptr = ret;
+        QueryFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @param {SpatialIdMap} map
+     */
+    pushMap(map) {
+        _assertClass(map, SpatialIdMap);
+        wasm.query_pushMap(this.__wbg_ptr, map.__wbg_ptr);
+    }
+    /**
+     * @param {SpatialIdSet} set
+     */
+    pushSet(set) {
+        _assertClass(set, SpatialIdSet);
+        wasm.query_pushSet(this.__wbg_ptr, set.__wbg_ptr);
+    }
+    /**
+     * @param {number} z
+     * @param {number} f
+     * @param {number} x
+     * @param {number} y
+     */
+    shift(z, f, x, y) {
+        const ret = wasm.query_shift(this.__wbg_ptr, z, f, x, y);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * @returns {SpatialIdMap}
+     */
+    toMap() {
+        const ptr = this.__destroy_into_raw();
+        const ret = wasm.query_toMap(ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return SpatialIdMap.__wrap(ret[0]);
+    }
+    /**
+     * @returns {SpatialIdSet}
+     */
+    toSet() {
+        const ptr = this.__destroy_into_raw();
+        const ret = wasm.query_toSet(ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return SpatialIdSet.__wrap(ret[0]);
+    }
+    /**
+     * `kind` は 0 が filter、1 が map、2 が filterMap。filterMap は `undefined` を返した要素を取り除く。
+     *
+     * `withId` のとき `f` は `(flexId, value)`、そうでなければ `(value)` を受け取る。
+     * `flexId` は `[fz, f, xz, x, yz, y, tz, t]` の数値列。
+     * @param {number} kind
+     * @param {boolean} with_id
+     * @param {Function} f
+     */
+    transform(kind, with_id, f) {
+        const ret = wasm.query_transform(this.__wbg_ptr, kind, with_id, f);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    validate() {
+        const ptr = this.__destroy_into_raw();
+        const ret = wasm.query_validate(ptr);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * @param {number} z
+     * @param {number} policy
+     */
+    zoomOut(z, policy) {
+        const ret = wasm.query_zoomOut(this.__wbg_ptr, z, policy);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+}
+if (Symbol.dispose) Query.prototype[Symbol.dispose] = Query.prototype.free;
+
 /**
  * 値は JS の `===` で比べる（`JsValue` の `PartialEq`）。
  */
@@ -549,12 +730,42 @@ function __wbg_get_imports() {
             const ret = Error(getStringFromWasm0(arg0, arg1));
             return ret;
         },
+        __wbg___wbindgen_is_falsy_16bd49b68658263e: function(arg0) {
+            const ret = !arg0;
+            return ret;
+        },
+        __wbg___wbindgen_is_undefined_8865fb403f8fe9d8: function(arg0) {
+            const ret = arg0 === undefined;
+            return ret;
+        },
         __wbg___wbindgen_jsval_eq_02babf21faa37971: function(arg0, arg1) {
             const ret = arg0 === arg1;
             return ret;
         },
+        __wbg___wbindgen_number_get_2e0e7dee9f701a71: function(arg0, arg1) {
+            const obj = arg1;
+            const ret = typeof(obj) === 'number' ? obj : undefined;
+            getDataViewMemory0().setFloat64(arg0 + 8 * 1, isLikeNone(ret) ? 0 : ret, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, !isLikeNone(ret), true);
+        },
         __wbg___wbindgen_throw_41e9ee4f547fc59a: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
+        },
+        __wbg_call_1875a20c43a36133: function() { return handleError(function (arg0, arg1, arg2, arg3) {
+            const ret = arg0.call(arg1, arg2, arg3);
+            return ret;
+        }, arguments); },
+        __wbg_call_187d372bd5fdd4aa: function() { return handleError(function (arg0, arg1, arg2) {
+            const ret = arg0.call(arg1, arg2);
+            return ret;
+        }, arguments); },
+        __wbg_new_2bdcdfcebdfc34d2: function(arg0, arg1) {
+            const ret = new TypeError(getStringFromWasm0(arg0, arg1));
+            return ret;
+        },
+        __wbg_new_6ab88fbe741af6b5: function(arg0, arg1) {
+            const ret = new RangeError(getStringFromWasm0(arg0, arg1));
+            return ret;
         },
         __wbg_new_ee2291f50781bf1d: function() {
             const ret = new Array();
@@ -570,6 +781,11 @@ function __wbg_get_imports() {
         },
         __wbg_push_2baf45db356cf468: function(arg0, arg1) {
             const ret = arg0.push(arg1);
+            return ret;
+        },
+        __wbindgen_generic_0000000000000001: function(arg0) {
+            // Cast intrinsic for `F64 -> Externref`.
+            const ret = arg0;
             return ret;
         },
         __wbindgen_init_externref_table: function() {
@@ -588,12 +804,21 @@ function __wbg_get_imports() {
     };
 }
 
+const QueryFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_query_free(ptr, 1));
 const SpatialIdMapFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_spatialidmap_free(ptr, 1));
 const SpatialIdSetFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_spatialidset_free(ptr, 1));
+
+function addToExternrefTable0(obj) {
+    const idx = wasm.__externref_table_alloc();
+    wasm.__wbindgen_externrefs.set(idx, obj);
+    return idx;
+}
 
 function _assertClass(instance, klass) {
     if (!(instance instanceof klass)) {
@@ -604,6 +829,14 @@ function _assertClass(instance, klass) {
 function getArrayF64FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getFloat64ArrayMemory0().subarray(ptr / 8, ptr / 8 + len);
+}
+
+let cachedDataViewMemory0 = null;
+function getDataViewMemory0() {
+    if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || (cachedDataViewMemory0.buffer.detached === undefined && cachedDataViewMemory0.buffer !== wasm.memory.buffer)) {
+        cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
+    }
+    return cachedDataViewMemory0;
 }
 
 let cachedFloat64ArrayMemory0 = null;
@@ -624,6 +857,15 @@ function getUint8ArrayMemory0() {
         cachedUint8ArrayMemory0 = new Uint8Array(wasm.memory.buffer);
     }
     return cachedUint8ArrayMemory0;
+}
+
+function handleError(f, args) {
+    try {
+        return f.apply(this, args);
+    } catch (e) {
+        const idx = addToExternrefTable0(e);
+        wasm.__wbindgen_exn_store(idx);
+    }
 }
 
 function isLikeNone(x) {
@@ -664,6 +906,7 @@ function __wbg_finalize_init(instance, module) {
     wasmInstance = instance;
     wasm = instance.exports;
     wasmModule = module;
+    cachedDataViewMemory0 = null;
     cachedFloat64ArrayMemory0 = null;
     cachedUint8ArrayMemory0 = null;
     wasm.__wbindgen_start();
