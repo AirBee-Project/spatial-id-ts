@@ -23,15 +23,26 @@ import {
 } from "./raw.js";
 
 /**
+ * {@link SpatialIdMap} と {@link Query} の値として持てるプリミティブ型。
+ */
+export type SpatialIdValue = number | string | boolean | null | undefined;
+
+/**
  * 時空間 ID の場所ごとに値を持つマップ。
  *
- * 値にはどの JS の値も入れられる。値は `===` で比べ、同じ値を持つ隣り合った場所は1つにまとめて持つ。
- * オブジェクトは参照で比べ、取り出すときも同じ参照を返す。`NaN` は自身と等しくないので、`NaN` 同士はまとまらない。
+ * 値には {@link SpatialIdValue}（`number`・`string`・`boolean`・`null`・`undefined`）を入れられる。
+ * 値は `===` で比べ、同じ値を持つ隣り合った場所は1つにまとめて持つ。`NaN` は自身と等しくないので、`NaN` 同士はまとまらない。
  */
-export class SpatialIdMap<V> implements Iterable<[RangeId, V]>, Disposable {
+export class SpatialIdMap<V extends SpatialIdValue = SpatialIdValue>
+  implements Iterable<[RangeId, V]>, Disposable
+{
   private owner: RawOwner<RawMap>;
 
-  /** 空のマップを作る。`entries` を渡すと、先頭から順に挿入したマップを作る。 */
+  /**
+   * 空のマップを作る。`entries` を渡すと、先頭から順に挿入したマップを作る。
+   *
+   * @throws `TypeError` 値に {@link SpatialIdValue} 以外が含まれるとき
+   */
   constructor(entries?: Iterable<readonly [SpatialId, V]>) {
     loadWasm();
     this.owner = new RawOwner(new RawMap());
@@ -43,7 +54,7 @@ export class SpatialIdMap<V> implements Iterable<[RangeId, V]>, Disposable {
   // geometry と spatial-id の型は `create` で作り、コンストラクターを公開していない。
   // それにそろえて `create` を用意しつつ、JS の Map と同じ `new` でも作れるようコンストラクターも公開している。
   /** {@link SpatialIdMap} を作る。`new SpatialIdMap(entries)` と同じ。 */
-  public static create<V>(
+  public static create<V extends SpatialIdValue>(
     entries?: Iterable<readonly [SpatialId, V]>,
   ): SpatialIdMap<V> {
     return new SpatialIdMap(entries);
@@ -52,27 +63,31 @@ export class SpatialIdMap<V> implements Iterable<[RangeId, V]>, Disposable {
   /**
    * {@link SpatialIdJson} からマップを作る。`data` はちょうど1件で、各 ID は `ref` で値を指さなければならない。
    *
-   * 同じ `ref` を指す ID は同じ値を共有するので、オブジェクトの値でも隣り合えば1つにまとまる。
-   *
    * ```ts
    * const map = SpatialIdMap.fromJSON<number>(JSON.parse(text));
    * ```
    *
    * @throws {@link spatial-id!SpatialIdError} ID の値が範囲外のとき
-   * @throws `TypeError` スキーマに沿っていないとき
+   * @throws `TypeError` スキーマに沿っていないか、値に {@link SpatialIdValue} 以外が含まれるとき
    */
-  public static fromJSON<V>(json: SpatialIdJson<V>): SpatialIdMap<V> {
+  public static fromJSON<V extends SpatialIdValue>(
+    json: SpatialIdJson<V>,
+  ): SpatialIdMap<V> {
     return new SpatialIdMap(decodeJsonMap<V>(json));
   }
 
-  private static wrap<V>(raw: RawMap): SpatialIdMap<V> {
+  private static wrap<V extends SpatialIdValue>(raw: RawMap): SpatialIdMap<V> {
     // コンストラクターを通すと空の RawMap を余分に作るので、通さずに作る
     const wrapped: SpatialIdMap<V> = Object.create(SpatialIdMap.prototype);
     wrapped.owner = new RawOwner(raw);
     return wrapped;
   }
 
-  /** `id` が占める場所に `value` を入れる。すでに値がある場所は上書きする。 */
+  /**
+   * `id` が占める場所に `value` を入れる。すでに値がある場所は上書きする。
+   *
+   * @throws `TypeError` `value` が {@link SpatialIdValue} でないとき
+   */
   public insert(id: SpatialId, value: V): void {
     this.owner.raw.insert(encodeId(id), value);
   }
@@ -175,17 +190,19 @@ export class SpatialIdMap<V> implements Iterable<[RangeId, V]>, Disposable {
   }
 
   /** 和を新しく作る。両方に値がある場所は、このマップの値を使う。 */
-  public union<W>(other: SpatialIdMap<W>): SpatialIdMap<V | W> {
+  public union<W extends SpatialIdValue>(
+    other: SpatialIdMap<W>,
+  ): SpatialIdMap<V | W> {
     return SpatialIdMap.wrap(this.owner.raw.union(other.owner.raw));
   }
 
   /** `other` にも値がある場所だけを残し、このマップの値を使ったマップを新しく作る。 */
-  public intersection(other: SpatialIdMap<unknown>): SpatialIdMap<V> {
+  public intersection(other: SpatialIdMap<SpatialIdValue>): SpatialIdMap<V> {
     return SpatialIdMap.wrap(this.owner.raw.intersection(other.owner.raw));
   }
 
   /** `other` に値がある場所を取り除いたマップを新しく作る。 */
-  public difference(other: SpatialIdMap<unknown>): SpatialIdMap<V> {
+  public difference(other: SpatialIdMap<SpatialIdValue>): SpatialIdMap<V> {
     return SpatialIdMap.wrap(this.owner.raw.difference(other.owner.raw));
   }
 

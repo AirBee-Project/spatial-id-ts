@@ -4,7 +4,7 @@ use js_sys::Array;
 use spatial_id::collection::SpatialIdMap as Map;
 use wasm_bindgen::prelude::*;
 
-/// 値は JS の `===` で比べる（`JsValue` の `PartialEq`）。
+/// 値は JS のプリミティブ（`number | string | boolean | null | undefined`）を保持し、JS の `===` で比べる。
 #[wasm_bindgen]
 #[derive(Default)]
 pub struct SpatialIdMap(pub(crate) Map<Value>);
@@ -20,8 +20,8 @@ impl SpatialIdMap {
         &mut self,
         id: &[f64],
         #[wasm_bindgen(unchecked_param_type = "unknown")] value: JsValue,
-    ) -> Result<(), JsError> {
-        self.0.insert(decode(id)?, Value(value));
+    ) -> Result<(), JsValue> {
+        self.0.insert(decode(id)?, Value::try_from(&value)?);
         Ok(())
     }
 

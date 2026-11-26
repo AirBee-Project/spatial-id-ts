@@ -3,7 +3,7 @@
 //! JS は演算を後置記法で積む（入力を積んでから演算を呼ぶ）。評価するメソッドは自身を消費するので、
 //! 1つの [`Query`] は1回だけ評価できる。
 //!
-//! 値は任意の JS の値（[`Value`]）で持ち、数値の演算の手前でだけ `i64` に直す。
+//! 値はプリミティブ（[`Value`]）で持ち、数値の演算の手前でだけ `i64` に直す。
 //! spatial-id-rs の数値の演算は `Ord` や `TryFrom<u64>` を求め、`f64` では使えないためである。
 
 use crate::codec::{Encode, decode_all, encode_entries};
@@ -115,11 +115,11 @@ fn integer<T: TryFrom<i64>>(value: f64, name: &str) -> Result<T, JsError> {
         .ok_or_else(|| JsError::new(&format!("{name} is out of range: {value}")))
 }
 
-fn safe_integer(value: &JsValue) -> Option<i64> {
-    value
-        .as_f64()
-        .filter(|n| n.fract() == 0.0 && n.abs() <= MAX_SAFE_INTEGER)
-        .map(|n| n as i64)
+fn safe_integer(value: &Value) -> Option<i64> {
+    match *value {
+        Value::Number(n) if n.fract() == 0.0 && n.abs() <= MAX_SAFE_INTEGER => Some(n as i64),
+        _ => None,
+    }
 }
 
 fn falloff_pattern(code: u8) -> Result<FalloffPattern, JsError> {
@@ -173,14 +173,12 @@ impl Query {
             Node::Int(q) => q,
             Node::Js(q) => {
                 let failure = self.failure.clone();
-                q.filter_map_values(move |v: Value| {
-                    let n = safe_integer(&v.0);
-                    if n.is_none() {
-                        failure.set(
+                q.try_filter_map_values(move |v: Value| {
+                    safe_integer(&v).map(Some).ok_or_else(|| {
+                        failure.fail(
                             TypeError::new("a numeric query value must be a safe integer").into(),
-                        );
-                    }
-                    n
+                        )
+                    })
                 })
             }
         }
@@ -191,15 +189,14 @@ impl Query {
             Node::Js(q) => q,
             Node::Int(q) => {
                 let failure = self.failure.clone();
-                q.filter_map_values(move |n: i64| {
+                q.try_filter_map_values(move |n: i64| {
                     let f = n as f64;
                     if f.abs() > MAX_SAFE_INTEGER {
-                        failure.set(
+                        return Err(failure.fail(
                             RangeError::new("a query value exceeds the safe integer range").into(),
-                        );
-                        return None;
+                        ));
                     }
-                    Some(Value(JsValue::from_f64(f)))
+                    Ok(Some(Value::Number(f)))
                 })
             }
         }
@@ -239,7 +236,7 @@ impl Query {
     #[wasm_bindgen(js_name = pushSet)]
     pub fn push_set(&mut self, set: &SpatialIdSet) {
         self.stack.push(Node::Js(
-            set.0.clone().query().map_values(|()| Value::UNDEFINED),
+            set.0.clone().query().map_values(|()| Value::Undefined),
         ));
     }
 
@@ -359,23 +356,36 @@ impl Query {
         let q = self.to_js(node);
         let failure = self.failure.clone();
         let f = Local(f);
-        // 失敗したあとは呼ばずに要素を捨てる。結果は評価の最後に失敗として投げる
-        let call = move |id: FlexId, value: &Value| -> Option<JsValue> {
-            if failure.failed() {
-                return None;
-            }
-            let result = if with_id {
-                f.0.call2(&JsValue::UNDEFINED, &encode_flex_id(id), &value.0)
+        let call = move |id: FlexId, value: &Value| -> Result<JsValue, JsValue> {
+            let js = value.to_js();
+            if with_id {
+                f.0.call2(&JsValue::UNDEFINED, &encode_flex_id(id), &js)
             } else {
-                f.0.call1(&JsValue::UNDEFINED, &value.0)
-            };
-            result.map_err(|e| failure.set(e)).ok()
+                f.0.call1(&JsValue::UNDEFINED, &js)
+            }
         };
         let q = match kind {
-            0 => q.filter(move |id, value| call(id, value).is_some_and(|r| r.is_truthy())),
-            1 => q.filter_map(move |id, value| call(id, &value).map(Value)),
-            2 => q.filter_map(move |id, value| {
-                call(id, &value).filter(|r| !r.is_undefined()).map(Value)
+            0 => q.try_filter_map(move |id, value| {
+                call(id, &value)
+                    .map(|r| r.is_truthy().then_some(value))
+                    .map_err(|e| failure.fail(e))
+            }),
+            1 => q.try_filter_map(move |id, value| {
+                call(id, &value)
+                    .and_then(|v| Value::try_from(&v))
+                    .map(Some)
+                    .map_err(|e| failure.fail(e))
+            }),
+            2 => q.try_filter_map(move |id, value| {
+                call(id, &value)
+                    .and_then(|v| {
+                        if v.is_undefined() {
+                            Ok(None)
+                        } else {
+                            Value::try_from(&v).map(Some)
+                        }
+                    })
+                    .map_err(|e| failure.fail(e))
             }),
             _ => return Err(JsError::new("unknown transform")),
         };
@@ -415,7 +425,7 @@ impl Query {
         let node = match (lhs, rhs) {
             (Node::Js(l), Node::Js(r)) => Node::Js(apply!(l, r)),
             (Node::Int(l), Node::Int(r)) => Node::Int(apply!(l, r)),
-            (Node::Js(l), Node::Int(r)) => Node::Js(apply!(l, r.map_values(|_| Value::UNDEFINED))),
+            (Node::Js(l), Node::Int(r)) => Node::Js(apply!(l, r.map_values(|_| Value::Undefined))),
             (Node::Int(l), Node::Js(r)) => Node::Int(apply!(l, r.map_values(|_| 0i64))),
         };
         self.stack.push(node);

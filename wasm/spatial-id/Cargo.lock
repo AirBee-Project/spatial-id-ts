@@ -123,7 +123,7 @@ checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
 [[package]]
 name = "spatial-id"
 version = "0.1.1"
-source = "git+https://github.com/AirBee-Project/spatial-id-rs.git?branch=main#95f148f47f27c886fa4b82acf6050442d1619fe3"
+source = "git+https://github.com/AirBee-Project/spatial-id-rs.git?branch=main#d5be28aeaf5ecc5a18ee48f8b55604c4427eb3ad"
 dependencies = [
  "hashbrown",
  "libm",

@@ -25,7 +25,7 @@ import { RangeId, SingleId } from "@airbee-project/spatial-id/spatial-id";
 const set = new SpatialIdSet([RangeId.create(4, 3, [2, 3], 1)]);
 set.get(SingleId.create(4, 3, 3, 1)); // 重なる部分を RangeId で返す
 
-// 場所ごとに値を持つ。値は === で比べる。
+// 場所ごとにプリミティブ値を持つ。値は === で比べる。
 using map = new SpatialIdMap<number>([[SingleId.create(4, 3, 2, 1), 10]]);
 for (const [id, value] of map) {
   console.log(id.toString(), value);

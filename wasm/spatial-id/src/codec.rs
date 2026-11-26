@@ -7,9 +7,11 @@
 //! 複数の ID を返すときは、1つ分の数値列を連ねる。
 //! `AllowedIntervals` は候補の秒数の列で受け取り、省略すると `None` として扱う。
 
+use crate::value::Value;
 use js_sys::{Array, Float64Array};
 use spatial_id::time::{AllowedIntervals, Interval};
 use spatial_id::{FlexId, RangeId, SingleId};
+use std::borrow::Borrow;
 use wasm_bindgen::prelude::*;
 
 fn to_js_error(e: spatial_id::Error) -> JsError {
@@ -110,14 +112,14 @@ pub(crate) fn encode_ids(ids: impl Iterator<Item = impl Encode>) -> Vec<f64> {
 }
 
 /// `[ID の数値列, 値の配列]` を返す。
-pub(crate) fn encode_entries<V: AsRef<JsValue>>(
+pub(crate) fn encode_entries<V: Borrow<Value>>(
     entries: impl Iterator<Item = (impl Encode, V)>,
 ) -> Array {
     let mut ids = Vec::new();
     let values = Array::new();
     for (id, value) in entries {
         id.encode(&mut ids);
-        values.push(value.as_ref());
+        values.push(&value.borrow().to_js());
     }
     Array::of2(&Float64Array::from(ids.as_slice()), &values)
 }

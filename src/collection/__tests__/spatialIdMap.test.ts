@@ -4,7 +4,7 @@ import { RangeId } from "../../spatial-id/rangeId.js";
 import { SingleId } from "../../spatial-id/singleId.js";
 import { AllowedIntervals } from "../../time/allowedIntervals.js";
 import { Interval } from "../../time/interval.js";
-import { SpatialIdMap } from "../spatialIdMap.js";
+import { SpatialIdMap, type SpatialIdValue } from "../spatialIdMap.js";
 
 const first = SingleId.create(4, 3, 2, 1);
 const second = SingleId.create(4, 3, 2, 2);
@@ -35,11 +35,26 @@ describe("SpatialIdMap の挿入と取得", () => {
     expect(map.get(SingleId.create(4, 3, 4, 1))).toEqual([]);
   });
 
-  it("オブジェクトの値は同じ参照で返す", () => {
-    const value = { name: "a" };
-    const map = new SpatialIdMap([[first, value]]);
-    const [entry] = map.get(first);
-    expect(entry?.[1]).toBe(value);
+  it("プリミティブ値をそのまま保持でき、undefined も消えない", () => {
+    const cases: SpatialIdValue[] = [10, "a", true, false, null, undefined];
+    for (const value of cases) {
+      const map = new SpatialIdMap<SpatialIdValue>([[first, value]]);
+      expect(singles(map.get(first))).toEqual([["4/3/2/1", value]]);
+    }
+    const nanMap = new SpatialIdMap([[first, Number.NaN]]);
+    expect(Number.isNaN(nanMap.get(first)[0]?.[1])).toBe(true);
+  });
+
+  it("プリミティブ以外の値を挿入すると TypeError を投げる", () => {
+    const map = new SpatialIdMap<SpatialIdValue>();
+    // @ts-expect-error オブジェクトは挿入できない
+    expect(() => map.insert(first, { name: "a" })).toThrow(TypeError);
+    // @ts-expect-error bigint は挿入できない
+    expect(() => map.insert(first, 1n)).toThrow(TypeError);
+    // @ts-expect-error symbol は挿入できない
+    expect(() => map.insert(first, Symbol("s"))).toThrow(TypeError);
+    // @ts-expect-error 関数は挿入できない
+    expect(() => map.insert(first, () => {})).toThrow(TypeError);
   });
 
   it("remove は重なる部分を取り除いて値と返す", () => {
@@ -133,7 +148,7 @@ describe("SpatialIdMap の解放", () => {
   });
 
   it("解放したマップを演算に渡すと例外を投げ、呼び出し元はそのまま使える", () => {
-    const map = new SpatialIdMap([[SingleId.create(4, 3, 2, 1), "x"]]);
+    const map = new SpatialIdMap<string>([[SingleId.create(4, 3, 2, 1), "x"]]);
     const freed = new SpatialIdMap();
     freed[Symbol.dispose]();
     expect(() => map.union(freed)).toThrow();
@@ -167,12 +182,15 @@ describe("SpatialIdMap の値の比べ方", () => {
   for (const f of [2, 3])
     for (const x of [2, 3])
       for (const y of [2, 3]) children.push(SingleId.create(4, f, x, y));
-  const countWith = (value: () => unknown) =>
+  const countWith = (value: () => SpatialIdValue) =>
     new SpatialIdMap(children.map((id) => [id, value()])).count();
 
   it("=== で等しい値はまとめる", () => {
     expect(countWith(() => 1)).toBe(1);
     expect(countWith(() => "a")).toBe(1);
+    expect(countWith(() => true)).toBe(1);
+    expect(countWith(() => null)).toBe(1);
+    expect(countWith(() => undefined)).toBe(1);
   });
 
   it("-0 と 0 は等しいのでまとめる", () => {
@@ -184,10 +202,14 @@ describe("SpatialIdMap の値の比べ方", () => {
     expect(countWith(() => Number.NaN)).toBe(8);
   });
 
-  it("オブジェクトは参照で比べる", () => {
-    const shared = {};
-    expect(countWith(() => shared)).toBe(1);
-    expect(countWith(() => ({}))).toBe(8);
+  it("異なる値や型はまとめない", () => {
+    const checker = (even: SpatialIdValue, odd: SpatialIdValue) =>
+      new SpatialIdMap<SpatialIdValue>(
+        children.map((id) => [id, (id.f + id.x + id.y) % 2 === 0 ? even : odd]),
+      ).count();
+    expect(checker(1, "1")).toBe(8);
+    expect(checker(null, undefined)).toBe(8);
+    expect(checker(0, false)).toBe(8);
   });
 });
 

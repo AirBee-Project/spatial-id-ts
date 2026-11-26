@@ -1,6 +1,7 @@
 import { RangeId } from "../spatial-id/rangeId.js";
 import { ZoomLevel } from "../spatial-id/zoomLevel.js";
 import { Interval } from "../time/interval.js";
+import type { SpatialIdValue } from "./spatialIdMap.js";
 
 const SCHEMA_URL = "https://airbee-project.github.io/schemas/json/v1.0.json";
 
@@ -141,7 +142,9 @@ export function decodeJsonSet(json: unknown): RangeId[] {
   return singleSeries(json).ids.map(decodeJsonEntry);
 }
 
-export function decodeJsonMap<V>(json: unknown): [RangeId, V][] {
+export function decodeJsonMap<V extends SpatialIdValue>(
+  json: unknown,
+): [RangeId, V][] {
   const { value, ids } = singleSeries(json);
   if (!Array.isArray(value)) {
     throw new TypeError('"data[0].value" must be an array');

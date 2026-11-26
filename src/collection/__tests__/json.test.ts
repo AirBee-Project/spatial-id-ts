@@ -141,13 +141,13 @@ describe("SpatialIdMap の JSON", () => {
     );
   });
 
-  it("同じ ref を指すオブジェクトの値は、隣り合えば1つにまとまる", () => {
-    const map = SpatialIdMap.fromJSON<{ kind: string }>({
+  it("同じ ref を指すプリミティブ値は、隣り合えば1つにまとまる", () => {
+    const map = SpatialIdMap.fromJSON<boolean | null>({
       ...envelope,
       data: [
         {
           name: "",
-          value: [{ kind: "rain" }],
+          value: [null],
           ids: [
             { z: 20, f: [0], x: [0], y: [0], ref: 0 },
             { z: 20, f: [1], x: [0], y: [0], ref: 0 },
@@ -156,6 +156,22 @@ describe("SpatialIdMap の JSON", () => {
       ],
     });
     expect(map.count()).toBe(1);
+    expect(roundTrip(map, SpatialIdMap.fromJSON<null>).count()).toBe(1);
+  });
+
+  it("プリミティブ以外の値を含む JSON は TypeError を投げる", () => {
+    const json = {
+      ...envelope,
+      data: [
+        {
+          name: "",
+          value: [{ kind: "rain" }],
+          ids: [{ z: 20, f: [0], x: [0], y: [0], ref: 0 }],
+        },
+      ],
+    };
+    // @ts-expect-error オブジェクトの配列は SpatialIdMap として読めない
+    expect(() => SpatialIdMap.fromJSON(json)).toThrow(TypeError);
   });
 
   it("ref が value の範囲外なら TypeError を投げる", () => {

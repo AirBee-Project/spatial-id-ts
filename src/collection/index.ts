@@ -35,6 +35,6 @@
 
 // biome-ignore assist/source/organizeImports: @sortStrategy documents-first はドキュメント以外を並べ替えないので、docs はこの export の順に並ぶ
 export { SpatialIdSet } from "./spatialIdSet.js";
-export { SpatialIdMap } from "./spatialIdMap.js";
+export { SpatialIdMap, type SpatialIdValue } from "./spatialIdMap.js";
 export type { SpatialIdJson } from "./json.js";
 export { Query, type MergePolicy, type FalloffPattern } from "./query.js";

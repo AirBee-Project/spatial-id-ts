@@ -67,16 +67,25 @@ export class Query {
      * `targets` の中にある部分を `[ID の数値列, 値の配列]` で返す。`targets` を省くと全体を返す。
      *
      * `overlapping` のとき `targets` で切り取らず、`flex` のとき ID を FlexId の数値列で返す。
-     * @param {Float64Array | null | undefined} targets
+     * @param {Float64Array | number[] | null | undefined} targets
      * @param {boolean} overlapping
      * @param {boolean} flex
      * @returns {[Float64Array, unknown[]]}
      */
     get(targets, overlapping, flex) {
-        const ptr = this.__destroy_into_raw();
-        var ptr0 = isLikeNone(targets) ? 0 : passArrayF64ToWasm0(targets, wasm.__wbindgen_malloc);
-        var len0 = WASM_VECTOR_LEN;
-        const ret = wasm.query_get(ptr, ptr0, len0, overlapping, flex);
+        const val2 = +overlapping;
+        const val3 = +flex;
+        let ptr, ptr0, len0;
+        try {
+            ptr = this.__destroy_into_raw();
+            ptr0 = isLikeNone(targets) ? 0 : passArrayF64ToWasm0(targets, wasm.__wbindgen_malloc);
+            len0 = WASM_VECTOR_LEN;
+        } catch (e) {
+            if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 8, 8); }
+            if (ptr) wasm.__wbg_query_free(ptr, 1);
+            throw e;
+        }
+        const ret = wasm.query_get(ptr, ptr0, len0, val2, val3);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -182,7 +191,7 @@ export class Query {
 if (Symbol.dispose) Query.prototype[Symbol.dispose] = Query.prototype.free;
 
 /**
- * 値は JS の `===` で比べる（`JsValue` の `PartialEq`）。
+ * 値は JS のプリミティブ（`number | string | boolean | null | undefined`）を保持し、JS の `===` で比べる。
  */
 export class SpatialIdMap {
     static __wrap(ptr) {
@@ -228,7 +237,7 @@ export class SpatialIdMap {
         return ret;
     }
     /**
-     * @param {Float64Array | null} [allowed_intervals]
+     * @param {Float64Array | number[] | null} [allowed_intervals]
      * @returns {[Float64Array, unknown[]]}
      */
     flatSingleIds(allowed_intervals) {
@@ -248,7 +257,7 @@ export class SpatialIdMap {
         return ret;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {[Float64Array, unknown[]]}
      */
     getFlexIds(id) {
@@ -261,7 +270,7 @@ export class SpatialIdMap {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {[Float64Array, unknown[]]}
      */
     getOverlappingFlexIds(id) {
@@ -274,7 +283,7 @@ export class SpatialIdMap {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {[Float64Array, unknown[]]}
      */
     getOverlapping(id) {
@@ -287,7 +296,7 @@ export class SpatialIdMap {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {[Float64Array, unknown[]]}
      */
     get(id) {
@@ -300,7 +309,7 @@ export class SpatialIdMap {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @param {unknown} value
      */
     insert(id, value) {
@@ -334,7 +343,7 @@ export class SpatialIdMap {
         return this;
     }
     /**
-     * @param {Float64Array | null} [allowed_intervals]
+     * @param {Float64Array | number[] | null} [allowed_intervals]
      * @returns {[Float64Array, unknown[]]}
      */
     reconstructedTimeRanges(allowed_intervals) {
@@ -347,7 +356,7 @@ export class SpatialIdMap {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {[Float64Array, unknown[]]}
      */
     removeFlexIds(id) {
@@ -360,7 +369,7 @@ export class SpatialIdMap {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {[Float64Array, unknown[]]}
      */
     removeOverlappingFlexIds(id) {
@@ -373,7 +382,7 @@ export class SpatialIdMap {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {[Float64Array, unknown[]]}
      */
     removeOverlapping(id) {
@@ -386,7 +395,7 @@ export class SpatialIdMap {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {[Float64Array, unknown[]]}
      */
     remove(id) {
@@ -399,7 +408,7 @@ export class SpatialIdMap {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {[Float64Array, unknown[]]}
      */
     spatialFaceNeighborsFlexIds(id) {
@@ -412,7 +421,7 @@ export class SpatialIdMap {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {[Float64Array, unknown[]]}
      */
     spatialFaceNeighbors(id) {
@@ -473,7 +482,7 @@ export class SpatialIdSet {
         return SpatialIdSet.__wrap(ret);
     }
     /**
-     * @param {Float64Array | null} [allowed_intervals]
+     * @param {Float64Array | number[] | null} [allowed_intervals]
      * @returns {Float64Array}
      */
     flatSingleIds(allowed_intervals) {
@@ -506,7 +515,7 @@ export class SpatialIdSet {
         return SpatialIdSet.__wrap(ret);
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {Float64Array}
      */
     getFlexIds(id) {
@@ -521,7 +530,7 @@ export class SpatialIdSet {
         return v2;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {Float64Array}
      */
     getOverlappingFlexIds(id) {
@@ -536,7 +545,7 @@ export class SpatialIdSet {
         return v2;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {Float64Array}
      */
     getOverlapping(id) {
@@ -551,7 +560,7 @@ export class SpatialIdSet {
         return v2;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {Float64Array}
      */
     get(id) {
@@ -575,7 +584,7 @@ export class SpatialIdSet {
         return v1;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      */
     insert(id) {
         const ptr0 = passArrayF64ToWasm0(id, wasm.__wbindgen_malloc);
@@ -608,7 +617,7 @@ export class SpatialIdSet {
         return this;
     }
     /**
-     * @param {Float64Array | null} [allowed_intervals]
+     * @param {Float64Array | number[] | null} [allowed_intervals]
      * @returns {Float64Array}
      */
     reconstructedTimeRanges(allowed_intervals) {
@@ -623,7 +632,7 @@ export class SpatialIdSet {
         return v2;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {Float64Array}
      */
     removeFlexIds(id) {
@@ -638,7 +647,7 @@ export class SpatialIdSet {
         return v2;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {Float64Array}
      */
     removeOverlappingFlexIds(id) {
@@ -653,7 +662,7 @@ export class SpatialIdSet {
         return v2;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {Float64Array}
      */
     removeOverlapping(id) {
@@ -668,7 +677,7 @@ export class SpatialIdSet {
         return v2;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {Float64Array}
      */
     remove(id) {
@@ -683,7 +692,7 @@ export class SpatialIdSet {
         return v2;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {Float64Array}
      */
     spatialFaceNeighborsFlexIds(id) {
@@ -698,7 +707,7 @@ export class SpatialIdSet {
         return v2;
     }
     /**
-     * @param {Float64Array} id
+     * @param {Float64Array | number[]} id
      * @returns {Float64Array}
      */
     spatialFaceNeighbors(id) {
@@ -726,60 +735,73 @@ if (Symbol.dispose) SpatialIdSet.prototype[Symbol.dispose] = SpatialIdSet.protot
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
-        __wbg_Error_30c8987f7c2ed4e2: function(arg0, arg1) {
+        __wbg_Error_208446807d0d1e30: function(arg0, arg1) {
             const ret = Error(getStringFromWasm0(arg0, arg1));
             return ret;
         },
-        __wbg___wbindgen_is_falsy_16bd49b68658263e: function(arg0) {
+        __wbg___wbindgen_boolean_get_4f1baf9a00be3c74: function(arg0) {
+            const v = arg0;
+            const ret = typeof(v) === 'boolean' ? v : undefined;
+            return isLikeNone(ret) ? 0xFFFFFF : ret ? 1 : 0;
+        },
+        __wbg___wbindgen_is_falsy_d864b623500ae65d: function(arg0) {
             const ret = !arg0;
             return ret;
         },
-        __wbg___wbindgen_is_undefined_8865fb403f8fe9d8: function(arg0) {
+        __wbg___wbindgen_is_null_c22311b1cc228e3a: function(arg0) {
+            const ret = arg0 === null;
+            return ret;
+        },
+        __wbg___wbindgen_is_undefined_be5b34249ff1fc15: function(arg0) {
             const ret = arg0 === undefined;
             return ret;
         },
-        __wbg___wbindgen_jsval_eq_02babf21faa37971: function(arg0, arg1) {
-            const ret = arg0 === arg1;
-            return ret;
-        },
-        __wbg___wbindgen_number_get_2e0e7dee9f701a71: function(arg0, arg1) {
+        __wbg___wbindgen_number_get_934b640d0889af78: function(arg0, arg1) {
             const obj = arg1;
             const ret = typeof(obj) === 'number' ? obj : undefined;
-            getDataViewMemory0().setFloat64(arg0 + 8 * 1, isLikeNone(ret) ? 0 : ret, true);
-            getDataViewMemory0().setInt32(arg0 + 4 * 0, !isLikeNone(ret), true);
+            getDataViewMemory0().setFloat64((arg0 >>> 0) + 8 * 1, isLikeNone(ret) ? 0 : ret, true);
+            getDataViewMemory0().setInt32((arg0 >>> 0) + 4 * 0, !isLikeNone(ret), true);
         },
-        __wbg___wbindgen_throw_41e9ee4f547fc59a: function(arg0, arg1) {
+        __wbg___wbindgen_string_get_7ce8eee7fd327545: function(arg0, arg1) {
+            const obj = arg1;
+            const ret = typeof(obj) === 'string' ? obj : undefined;
+            var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            var len1 = WASM_VECTOR_LEN;
+            getDataViewMemory0().setInt32((arg0 >>> 0) + 4 * 1, len1, true);
+            getDataViewMemory0().setInt32((arg0 >>> 0) + 4 * 0, ptr1, true);
+        },
+        __wbg___wbindgen_throw_4c88d8bf264fd984: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
         },
-        __wbg_call_1875a20c43a36133: function() { return handleError(function (arg0, arg1, arg2, arg3) {
-            const ret = arg0.call(arg1, arg2, arg3);
-            return ret;
-        }, arguments); },
-        __wbg_call_187d372bd5fdd4aa: function() { return handleError(function (arg0, arg1, arg2) {
+        __wbg_call_a410eb4b59ed5965: function() { return handleError(function (arg0, arg1, arg2) {
             const ret = arg0.call(arg1, arg2);
             return ret;
         }, arguments); },
-        __wbg_new_2bdcdfcebdfc34d2: function(arg0, arg1) {
-            const ret = new TypeError(getStringFromWasm0(arg0, arg1));
+        __wbg_call_fc92fee6137d452d: function() { return handleError(function (arg0, arg1, arg2, arg3) {
+            const ret = arg0.call(arg1, arg2, arg3);
             return ret;
-        },
-        __wbg_new_6ab88fbe741af6b5: function(arg0, arg1) {
-            const ret = new RangeError(getStringFromWasm0(arg0, arg1));
-            return ret;
-        },
-        __wbg_new_ee2291f50781bf1d: function() {
+        }, arguments); },
+        __wbg_new_37eb45aaf5eeb820: function() {
             const ret = new Array();
             return ret;
         },
-        __wbg_new_from_slice_f545fd22ddc142b8: function(arg0, arg1) {
+        __wbg_new_4416a2fe2fac9c65: function(arg0, arg1) {
+            const ret = new TypeError(getStringFromWasm0(arg0, arg1));
+            return ret;
+        },
+        __wbg_new_8a1847cd91d0d7fb: function(arg0, arg1) {
+            const ret = new RangeError(getStringFromWasm0(arg0, arg1));
+            return ret;
+        },
+        __wbg_new_from_slice_aaf85a9746711968: function(arg0, arg1) {
             const ret = new Float64Array(getArrayF64FromWasm0(arg0, arg1));
             return ret;
         },
-        __wbg_of_20798cb14708764f: function(arg0, arg1) {
+        __wbg_of_e7ea0fcd535c1444: function(arg0, arg1) {
             const ret = Array.of(arg0, arg1);
             return ret;
         },
-        __wbg_push_2baf45db356cf468: function(arg0, arg1) {
+        __wbg_push_c9f4893fc209f768: function(arg0, arg1) {
             const ret = arg0.push(arg1);
             return ret;
         },
@@ -788,14 +810,18 @@ function __wbg_get_imports() {
             const ret = arg0;
             return ret;
         },
+        __wbindgen_generic_0000000000000002: function(arg0, arg1) {
+            // Cast intrinsic for `Ref(String) -> Externref`.
+            const ret = getStringFromWasm0(arg0, arg1);
+            return ret;
+        },
         __wbindgen_init_externref_table: function() {
             const table = wasm.__wbindgen_externrefs;
-            const offset = table.grow(4);
             table.set(0, undefined);
-            table.set(offset + 0, undefined);
-            table.set(offset + 1, null);
-            table.set(offset + 2, true);
-            table.set(offset + 3, false);
+            table.set(1024, undefined);
+            table.set(1025, null);
+            table.set(1026, true);
+            table.set(1027, false);
         },
     };
     return {
@@ -848,7 +874,8 @@ function getFloat64ArrayMemory0() {
 }
 
 function getStringFromWasm0(ptr, len) {
-    return decodeText(ptr >>> 0, len);
+    ptr = ptr >>> 0;
+    return decodeText(getUint8ArrayMemory0().subarray(ptr, ptr + len));
 }
 
 let cachedUint8ArrayMemory0 = null;
@@ -879,24 +906,74 @@ function passArrayF64ToWasm0(arg, malloc) {
     return ptr;
 }
 
+function passStringToWasm0(arg, malloc, realloc) {
+    if (realloc === undefined) {
+        const buf = cachedTextEncoder.encode(arg);
+        const ptr = malloc(buf.length, 1) >>> 0;
+        getUint8ArrayMemory0().subarray(ptr, ptr + buf.length).set(buf);
+        WASM_VECTOR_LEN = buf.length;
+        return ptr;
+    }
+
+    let len = arg.length;
+    let ptr = malloc(len, 1) >>> 0;
+
+    const mem = getUint8ArrayMemory0();
+
+    let offset = 0;
+
+    for (; offset < len; offset++) {
+        const code = arg.charCodeAt(offset);
+        if (code > 0x7F) break;
+        mem[ptr + offset] = code;
+    }
+    if (offset !== len) {
+        if (offset !== 0) {
+            arg = arg.slice(offset);
+        }
+        ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
+        const view = getUint8ArrayMemory0().subarray(ptr + offset, ptr + len);
+        const ret = cachedTextEncoder.encodeInto(arg, view);
+
+        offset += ret.written;
+        ptr = realloc(ptr, len, offset, 1) >>> 0;
+    }
+
+    WASM_VECTOR_LEN = offset;
+    return ptr;
+}
+
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_externrefs.get(idx);
     wasm.__externref_table_dealloc(idx);
     return value;
 }
 
-let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
+let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true });
 cachedTextDecoder.decode();
 const MAX_SAFARI_DECODE_BYTES = 2146435072;
 let numBytesDecoded = 0;
-function decodeText(ptr, len) {
-    numBytesDecoded += len;
+function decodeText(bytes) {
+    numBytesDecoded += bytes.length;
     if (numBytesDecoded >= MAX_SAFARI_DECODE_BYTES) {
-        cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
+        cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true });
         cachedTextDecoder.decode();
-        numBytesDecoded = len;
+        numBytesDecoded = bytes.length;
     }
-    return cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len));
+    return cachedTextDecoder.decode(bytes);
+}
+
+const cachedTextEncoder = new TextEncoder();
+
+if (!('encodeInto' in cachedTextEncoder)) {
+    cachedTextEncoder.encodeInto = function (arg, view) {
+        const buf = cachedTextEncoder.encode(arg);
+        view.set(buf);
+        return {
+            read: arg.length,
+            written: buf.length
+        };
+    };
 }
 
 let WASM_VECTOR_LEN = 0;
@@ -972,9 +1049,17 @@ function initSync(module) {
     return __wbg_finalize_init(instance, module);
 }
 
+let __wbg_init_promise;
 async function __wbg_init(module_or_path) {
     if (wasm !== undefined) return wasm;
+    if (__wbg_init_promise === undefined) {
+        __wbg_init_promise = __wbg_init_once(module_or_path);
+        __wbg_init_promise.catch(() => { __wbg_init_promise = undefined; });
+    }
+    return __wbg_init_promise;
+}
 
+async function __wbg_init_once(module_or_path) {
 
     if (module_or_path !== undefined) {
         if (Object.getPrototypeOf(module_or_path) === Object.prototype) {

@@ -288,16 +288,87 @@ describe("Query の評価", () => {
     );
   });
 
-  it("コールバックが投げた例外をそのまま投げる", () => {
+  it("コールバックが投げた例外をそのまま投げ、以降の要素を評価しない", () => {
     const error = new Error("boom");
+    const visited: number[] = [];
+    const many = mapOf([
+      [0, 1],
+      [1, 2],
+      [2, 3],
+    ]);
     expect(() =>
-      map
+      many
         .query()
-        .mapValues(() => {
-          throw error;
+        .mapValues((v) => {
+          visited.push(v);
+          if (v === 1) throw error;
+          return v;
         })
         .get(),
     ).toThrow(error);
+    expect(visited).toEqual([1]);
+  });
+
+  it("安全な整数でない値に出会った時点で評価を打ち切る", () => {
+    const visited: number[] = [];
+    const mixed = mapOf([
+      [0, 1.5],
+      [1, 2],
+      [2, 3],
+    ]);
+    expect(() =>
+      mixed
+        .query()
+        .mapValues((v) => {
+          visited.push(v);
+          return v;
+        })
+        .filterEq(2)
+        .get(),
+    ).toThrow(TypeError);
+    expect(visited).toEqual([1.5]);
+  });
+
+  it("map や filterMap がプリミティブ以外を返すと TypeError で評価を打ち切る", () => {
+    const visited: number[] = [];
+    const many = mapOf([
+      [0, 1],
+      [1, 2],
+      [2, 3],
+    ]);
+    expect(() =>
+      many
+        .query()
+        // @ts-expect-error オブジェクトは返せない
+        .mapValues((v) => {
+          visited.push(v);
+          return { v };
+        })
+        .get(),
+    ).toThrow(TypeError);
+    expect(visited).toEqual([1]);
+
+    visited.length = 0;
+    expect(() =>
+      many
+        .query()
+        // @ts-expect-error bigint は返せない
+        .filterMapValues((v) => {
+          visited.push(v);
+          if (v === 1) return undefined;
+          return 1n;
+        })
+        .get(),
+    ).toThrow(TypeError);
+    expect(visited).toEqual([1, 2]);
+  });
+
+  it("数値演算の結果が安全な整数を超えると RangeError で評価を打ち切る", () => {
+    const parent = new SpatialIdMap<number>([
+      [SingleId.create(20, 0, 0, 0), Number.MAX_SAFE_INTEGER],
+      [SingleId.create(20, 0, 0, 1), 1],
+    ]);
+    expect(() => parent.query().zoomOut(19, "sum").get()).toThrow(RangeError);
   });
 
   it("解放したコレクションの Query は評価で例外を投げる", () => {
@@ -319,5 +390,15 @@ describe("Query の型", () => {
     // @ts-expect-error 値の範囲での絞り込みは数値の Query でだけ使える
     names.filterIn({ start: 0 });
     names.zoomOut(19, "keepExisting");
+  });
+
+  it("SpatialIdMap と Query の値型はプリミティブに限られる", () => {
+    // @ts-expect-error オブジェクト型は SpatialIdMap の値にできない
+    () => new SpatialIdMap<{ a: number }>();
+    const names = new SpatialIdMap<string>().query();
+    // @ts-expect-error mapValues でオブジェクトは返せない
+    names.mapValues((s) => ({ s }));
+    // @ts-expect-error filterMap で bigint は返せない
+    names.filterMap(() => 1n);
   });
 });

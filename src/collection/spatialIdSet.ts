@@ -20,7 +20,7 @@ import {
   RawOwner,
   RawSet,
 } from "./raw.js";
-import type { SpatialIdMap } from "./spatialIdMap.js";
+import type { SpatialIdMap, SpatialIdValue } from "./spatialIdMap.js";
 
 /**
  * 時空間 ID の集合。
@@ -47,7 +47,7 @@ export class SpatialIdSet implements Iterable<RangeId>, Disposable {
   }
 
   /** `map` の値を捨て、値がある場所だけを持つ集合を作る。`map` は変わらない。 */
-  public static from(map: SpatialIdMap<unknown>): SpatialIdSet {
+  public static from(map: SpatialIdMap<SpatialIdValue>): SpatialIdSet {
     // 公開型に RawMap を出すと、dist にない Wasm の型定義を .d.ts が参照してしまうので、private のまま読む
     // biome-ignore lint/complexity/useLiteralKeys: private は要素アクセスでしか読めない
     return SpatialIdSet.wrap(RawSet.fromMap(map["owner"].raw));

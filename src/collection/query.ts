@@ -10,7 +10,7 @@ import {
   loadWasm,
   RawQuery,
 } from "./raw.js";
-import { SpatialIdMap } from "./spatialIdMap.js";
+import { SpatialIdMap, type SpatialIdValue } from "./spatialIdMap.js";
 import { SpatialIdSet } from "./spatialIdSet.js";
 
 /**
@@ -90,9 +90,9 @@ type Emit = (raw: RawQuery) => void;
  *
  * @inline
  */
-type Source<V> = Query<V> | SpatialIdMap<V>;
+type Source<V extends SpatialIdValue> = Query<V> | SpatialIdMap<V>;
 
-function emitOf(source: Source<unknown> | SpatialIdSet): Emit {
+function emitOf(source: Source<SpatialIdValue> | SpatialIdSet): Emit {
   // biome-ignore lint/complexity/useLiteralKeys: private は要素アクセスでしか読めない
   return (source instanceof Query ? source : source.query())["emit"];
 }
@@ -126,10 +126,11 @@ function encodeTargets(targets: Targets): Float64Array | undefined {
  * 数値の演算（{@link Query.falloffX} など）と、数値の規則（`sum` など）は、値が安全な整数（`Number.isSafeInteger`）の
  * ときだけ使える。評価の途中でそうでない値に出会うと、`TypeError` を投げる。
  * 結果が安全な整数の範囲を超えたときは、`RangeError` を投げる。
+ * {@link Query.map} などで {@link SpatialIdValue} 以外の値を返したときも、評価時に `TypeError` を投げる。
  *
  * @typeParam V 値の型。{@link SpatialIdSet} から作ったときは `undefined`
  */
-export class Query<V> {
+export class Query<V extends SpatialIdValue = SpatialIdValue> {
   private readonly emit: Emit;
 
   /** @internal */
@@ -137,14 +138,19 @@ export class Query<V> {
     this.emit = emit;
   }
 
-  private chain<U>(op: (raw: RawQuery) => void): Query<U> {
+  private chain<U extends SpatialIdValue>(
+    op: (raw: RawQuery) => void,
+  ): Query<U> {
     return new Query((raw) => {
       this.emit(raw);
       op(raw);
     });
   }
 
-  private binary<U>(other: Emit, op: (raw: RawQuery) => void): Query<U> {
+  private binary<U extends SpatialIdValue>(
+    other: Emit,
+    op: (raw: RawQuery) => void,
+  ): Query<U> {
     return new Query((raw) => {
       this.emit(raw);
       other(raw);
@@ -306,7 +312,7 @@ export class Query<V> {
     return this.chain((raw) => raw.filterNumbers(2, range.start, range.end));
   }
 
-  private transform<U>(
+  private transform<U extends SpatialIdValue>(
     kind: number,
     f: (id: FlexId, value: V) => unknown,
   ): Query<U> {
@@ -328,7 +334,9 @@ export class Query<V> {
   }
 
   /** 各要素の {@link FlexId} と値を `f` で写す。{@link FlexId} の扱いは {@link Query.filter} と同じ。 */
-  public map<U>(f: (id: FlexId, value: V) => U): Query<U> {
+  public map<U extends SpatialIdValue>(
+    f: (id: FlexId, value: V) => U,
+  ): Query<U> {
     return this.transform(TRANSFORM.map, f);
   }
 
@@ -336,7 +344,9 @@ export class Query<V> {
    * 各要素の {@link FlexId} と値を `f` で写し、`undefined` を返した要素を取り除く。
    * {@link FlexId} の扱いは {@link Query.filter} と同じ。
    */
-  public filterMap<U>(f: (id: FlexId, value: V) => U | undefined): Query<U> {
+  public filterMap<U extends SpatialIdValue>(
+    f: (id: FlexId, value: V) => U | undefined,
+  ): Query<U> {
     return this.transform(TRANSFORM.filterMap, f);
   }
 
@@ -346,12 +356,14 @@ export class Query<V> {
   }
 
   /** 各値を `f` で写す。 */
-  public mapValues<U>(f: (value: V) => U): Query<U> {
+  public mapValues<U extends SpatialIdValue>(f: (value: V) => U): Query<U> {
     return this.chain((raw) => raw.transform(TRANSFORM.map, false, f));
   }
 
   /** 各値を `f` で写し、`undefined` を返した要素を取り除く。 */
-  public filterMapValues<U>(f: (value: V) => U | undefined): Query<U> {
+  public filterMapValues<U extends SpatialIdValue>(
+    f: (value: V) => U | undefined,
+  ): Query<U> {
     return this.chain((raw) => raw.transform(TRANSFORM.filterMap, false, f));
   }
 
@@ -365,12 +377,12 @@ export class Query<V> {
   }
 
   /** `other` と重なる部分だけを、このクエリの値で残す。`other` の値の型は問わない。 */
-  public intersection(other: Source<unknown> | SpatialIdSet): Query<V> {
+  public intersection(other: Source<SpatialIdValue> | SpatialIdSet): Query<V> {
     return this.binary(emitOf(other), (raw) => raw.binary(0));
   }
 
   /** `other` と重なる部分を取り除く。`other` の値の型は問わない。 */
-  public difference(other: Source<unknown> | SpatialIdSet): Query<V> {
+  public difference(other: Source<SpatialIdValue> | SpatialIdSet): Query<V> {
     return this.binary(emitOf(other), (raw) => raw.binary(1));
   }
 

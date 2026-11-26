@@ -26,7 +26,7 @@ export class Query {
      *
      * `overlapping` のとき `targets` で切り取らず、`flex` のとき ID を FlexId の数値列で返す。
      */
-    get(targets: Float64Array | null | undefined, overlapping: boolean, flex: boolean): [Float64Array, unknown[]];
+    get(targets: Float64Array | number[] | null | undefined, overlapping: boolean, flex: boolean): [Float64Array, unknown[]];
     /**
      * 積んだ2つを `policy` で重ね合わせる。
      */
@@ -49,7 +49,7 @@ export class Query {
 }
 
 /**
- * 値は JS の `===` で比べる（`JsValue` の `PartialEq`）。
+ * 値は JS のプリミティブ（`number | string | boolean | null | undefined`）を保持し、JS の `===` で比べる。
  */
 export class SpatialIdMap {
     free(): void;
@@ -58,23 +58,23 @@ export class SpatialIdMap {
     count(): number;
     difference(other: SpatialIdMap): SpatialIdMap;
     entries(): [Float64Array, unknown[]];
-    flatSingleIds(allowed_intervals?: Float64Array | null): [Float64Array, unknown[]];
+    flatSingleIds(allowed_intervals?: Float64Array | number[] | null): [Float64Array, unknown[]];
     flexEntries(): [Float64Array, unknown[]];
-    getFlexIds(id: Float64Array): [Float64Array, unknown[]];
-    getOverlappingFlexIds(id: Float64Array): [Float64Array, unknown[]];
-    getOverlapping(id: Float64Array): [Float64Array, unknown[]];
-    get(id: Float64Array): [Float64Array, unknown[]];
-    insert(id: Float64Array, value: unknown): void;
+    getFlexIds(id: Float64Array | number[]): [Float64Array, unknown[]];
+    getOverlappingFlexIds(id: Float64Array | number[]): [Float64Array, unknown[]];
+    getOverlapping(id: Float64Array | number[]): [Float64Array, unknown[]];
+    get(id: Float64Array | number[]): [Float64Array, unknown[]];
+    insert(id: Float64Array | number[], value: unknown): void;
     intersection(other: SpatialIdMap): SpatialIdMap;
     isEmpty(): boolean;
     constructor();
-    reconstructedTimeRanges(allowed_intervals?: Float64Array | null): [Float64Array, unknown[]];
-    removeFlexIds(id: Float64Array): [Float64Array, unknown[]];
-    removeOverlappingFlexIds(id: Float64Array): [Float64Array, unknown[]];
-    removeOverlapping(id: Float64Array): [Float64Array, unknown[]];
-    remove(id: Float64Array): [Float64Array, unknown[]];
-    spatialFaceNeighborsFlexIds(id: Float64Array): [Float64Array, unknown[]];
-    spatialFaceNeighbors(id: Float64Array): [Float64Array, unknown[]];
+    reconstructedTimeRanges(allowed_intervals?: Float64Array | number[] | null): [Float64Array, unknown[]];
+    removeFlexIds(id: Float64Array | number[]): [Float64Array, unknown[]];
+    removeOverlappingFlexIds(id: Float64Array | number[]): [Float64Array, unknown[]];
+    removeOverlapping(id: Float64Array | number[]): [Float64Array, unknown[]];
+    remove(id: Float64Array | number[]): [Float64Array, unknown[]];
+    spatialFaceNeighborsFlexIds(id: Float64Array | number[]): [Float64Array, unknown[]];
+    spatialFaceNeighbors(id: Float64Array | number[]): [Float64Array, unknown[]];
     union(other: SpatialIdMap): SpatialIdMap;
 }
 
@@ -84,25 +84,25 @@ export class SpatialIdSet {
     clear(): void;
     count(): number;
     difference(other: SpatialIdSet): SpatialIdSet;
-    flatSingleIds(allowed_intervals?: Float64Array | null): Float64Array;
+    flatSingleIds(allowed_intervals?: Float64Array | number[] | null): Float64Array;
     flexIds(): Float64Array;
     static fromMap(map: SpatialIdMap): SpatialIdSet;
-    getFlexIds(id: Float64Array): Float64Array;
-    getOverlappingFlexIds(id: Float64Array): Float64Array;
-    getOverlapping(id: Float64Array): Float64Array;
-    get(id: Float64Array): Float64Array;
+    getFlexIds(id: Float64Array | number[]): Float64Array;
+    getOverlappingFlexIds(id: Float64Array | number[]): Float64Array;
+    getOverlapping(id: Float64Array | number[]): Float64Array;
+    get(id: Float64Array | number[]): Float64Array;
     ids(): Float64Array;
-    insert(id: Float64Array): void;
+    insert(id: Float64Array | number[]): void;
     intersection(other: SpatialIdSet): SpatialIdSet;
     isEmpty(): boolean;
     constructor();
-    reconstructedTimeRanges(allowed_intervals?: Float64Array | null): Float64Array;
-    removeFlexIds(id: Float64Array): Float64Array;
-    removeOverlappingFlexIds(id: Float64Array): Float64Array;
-    removeOverlapping(id: Float64Array): Float64Array;
-    remove(id: Float64Array): Float64Array;
-    spatialFaceNeighborsFlexIds(id: Float64Array): Float64Array;
-    spatialFaceNeighbors(id: Float64Array): Float64Array;
+    reconstructedTimeRanges(allowed_intervals?: Float64Array | number[] | null): Float64Array;
+    removeFlexIds(id: Float64Array | number[]): Float64Array;
+    removeOverlappingFlexIds(id: Float64Array | number[]): Float64Array;
+    removeOverlapping(id: Float64Array | number[]): Float64Array;
+    remove(id: Float64Array | number[]): Float64Array;
+    spatialFaceNeighborsFlexIds(id: Float64Array | number[]): Float64Array;
+    spatialFaceNeighbors(id: Float64Array | number[]): Float64Array;
     union(other: SpatialIdSet): SpatialIdSet;
 }
 
@@ -173,12 +173,13 @@ export interface InitOutput {
     readonly spatialidset_spatialFaceNeighbors: (a: number, b: number, c: number) => [number, number, number, number];
     readonly spatialidset_spatialFaceNeighborsFlexIds: (a: number, b: number, c: number) => [number, number, number, number];
     readonly spatialidset_union: (a: number, b: number) => number;
+    readonly __wbindgen_malloc: (a: number, b: number) => number;
+    readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_exn_store: (a: number) => void;
     readonly __externref_table_alloc: () => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __externref_table_dealloc: (a: number) => void;
-    readonly __wbindgen_malloc: (a: number, b: number) => number;
-    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_start: () => void;
 }
 
